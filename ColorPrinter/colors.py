@@ -1,3 +1,14 @@
+class SystemColors(object):
+
+    HEADER = 95
+    OKBLUE = 94
+    OKGREEN = 92
+    WARNING = 93
+    FAIL = 91
+    BOLD = 1
+    UNDERLINE = 4
+
+
 class Colors(object):
 
     grey = 30
@@ -24,26 +35,6 @@ class Highlights(object):
 ENDC = '\033[0m'
 
 
-colors = {"grey": Colors.grey,
-          "red": Colors.red,
-          "green": Colors.green,
-          "yellow": Colors.yellow,
-          "blue": Colors.blue,
-          "magenta": Colors.magenta,
-          "cyan": Colors.cyan,
-          "white": Colors.white}
-
-
-colors = {"grey": Highlights.grey,
-          "red": Highlights.red,
-          "green": Highlights.green,
-          "yellow": Highlights.yellow,
-          "blue": Highlights.blue,
-          "magenta": Highlights.magenta,
-          "cyan": Highlights.cyan,
-          "white": Highlights.white}
-
-
 def help():
 
     print "Colors"
@@ -66,6 +57,14 @@ def help():
     color_print("cyan: ", Highlights.cyan, "cyan")
     color_print("white: ", Highlights.white, "white")
     print
+    print "SystemColors"
+    color_print("HEADER: ", SystemColors.HEADER, "HEADER")
+    color_print("OKBLUE: ", SystemColors.OKBLUE, "OKBLUE")
+    color_print("OKGREEN: ", SystemColors.OKGREEN, "OKGREEN")
+    color_print("WARNING: ", SystemColors.WARNING, "WARNING")
+    color_print("FAIL: ", SystemColors.FAIL, "FAIL")
+    color_print("BOLD: ", SystemColors.BOLD, "BOLD")
+    color_print("UNDERLINE: ", SystemColors.UNDERLINE, "UNDERLINE")
 
 
 def _get_color(color):
@@ -107,4 +106,5 @@ def color_print(*args):
 if __name__ == "__main__":
 
     help()
+    print
     color_print("no_color_text, ", Colors.red, "the next text is red, ", Highlights.red, "Need to highlight this, ", "no color again, ", "still no color, ", Colors.blue, "and see some blue.")

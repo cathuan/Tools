@@ -19,7 +19,7 @@ x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
 y = np.random.normal(0, 0.01, 10000).cumsum()
 trace3 = Scatter(x=x, y=y, line=Line(width=2, color="green"), name="volume")
 
-fig = tools.make_subplots(rows=2, cols=1)
+fig = tools.make_subplots(rows=2, cols=1, shared_xaxes=True)
 fig.append_trace(trace1, 1, 1)
 fig.append_trace(trace2, 1, 1)
 fig.append_trace(trace3, 2, 1)

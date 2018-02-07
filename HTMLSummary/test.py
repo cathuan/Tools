@@ -23,13 +23,14 @@ fig = tools.make_subplots(rows=2, cols=1, shared_xaxes=True)
 fig.append_trace(trace1, 1, 1)
 fig.append_trace(trace2, 1, 1)
 fig.append_trace(trace3, 2, 1)
-fig["layout"].update(height=600, width=600, title="test graph with two subplots")
+fig["layout"].update(height=1000, width=1000, title="test graph with two subplots")
 div = plot(fig, output_type="div")
 
 df = pd.DataFrame(np.arange(1000).reshape(50, 20))
 summary_table_1 = df.describe()
 for column in summary_table_1.columns:
     summary_table_1[column] = summary_table_1[column].apply(lambda v: "%.2f" % v)
+
 # use bootstrap styling
 summary_table_1 = summary_table_1.to_html().replace('<table border="1" class="dataframe">',
                                                     '<table class="table table-striped">')
@@ -42,7 +43,7 @@ style = '''
     body{ margin:0 100; background:whitesmoke; }
 
     tr {
-    width: 100%;
+    width: 200%;
     display: inline-table;
     table-layout: fixed;
     }
@@ -70,8 +71,8 @@ html_string = '''
     <body>
         <h2>2014 technology and CPG stock prices</h1>
         <h3>Section 1: Apple Inc. (AAPL) stock in 2014</h2>
-        ''' + div + '''
         <p>Apple stock price rose steadily through 2014.</p>
+        ''' + div + '''
         <h3>Reference table: stock tickers</h3>
         <div class="span3", style="overflow:auto">
             ''' + summary_table_1 + '''

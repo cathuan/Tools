@@ -17,37 +17,24 @@ def get_daily_pnls(df):
     return s_daily_pnls
 
 
-# summary 1
-def summarize_daily_pnl(df):
-    s_daily_pnls = get_daily_pnls(df)
-    daily_pnl_mean = s_daily_pnls.mean()
-    daily_pnl_stddev = s_daily_pnls.std()
-    k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
-    print "Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean
-    print "Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev
-    print "Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value
-
-    s_daily_pnls.to_frame().hist(bins=range(-500, 500, 10))
-    plt.savefig("daily_pnl_histogram.png")
-
-
 def get_daily_deltas(df):
     """Return a pandas dataframe with index "date" and values 'delta on the date'
     """
-    df_daily_deltas = df["Delta"].reset_index().groupby("date")["delta"].sum()
-    return df_daily_deltas
+    s_daily_deltas = df["Delta"].reset_index().groupby("date")["delta"].sum()
+    return s_daily_deltas
 
 
 def get_daily_abs_deltas(df):
     """Return a pandas dataframe with index "date" and values 'abs delta on the date'
     """
-    df_abs_deltas = df["Delta"]["delta"].apply(abs)
-    df_abs_deltas.index = df.index
-    df_daily_abs_deltas = df_abs_deltas.reset_index().groupby("date").sum()
-    return df_daily_abs_deltas
+    s_abs_deltas = df["Delta"]["delta"].apply(abs)
+    s_abs_deltas.index = df.index
+    s_daily_abs_deltas = s_abs_deltas.reset_index().groupby("date").sum()["delta"]
+    return s_daily_abs_deltas
 
 
-def get_drawdowns(df_daily_pnls):
+def get_drawdowns(df):
+    df_daily_pnls = get_daily_pnls(df)
     drawdowns = []
     drawdown = 0
     for pnl in df_daily_pnls.values:
@@ -58,7 +45,45 @@ def get_drawdowns(df_daily_pnls):
     df_drawdowns = pd.DataFrame(drawdowns)
     df_drawdowns.index = df_daily_pnls.index
     df_drawdowns.columns = ["drawdown"]
-    return df_drawdowns
+    return df_drawdowns["drawdown"]
+
+
+# summary 1
+def summarize_daily_pnl(df):
+    # daily pnls
+    s_daily_pnls = get_daily_pnls(df)
+    daily_pnl_mean = s_daily_pnls.mean()
+    daily_pnl_stddev = s_daily_pnls.std()
+    k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
+    print "Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean
+    print "Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev
+    print "Daily Pnl Summary: daily pnl max win: $%.2f" % s_daily_pnls.max()
+    print "Daily Pnl Summary: daily pnl max loss: $%.2f" % s_daily_pnls.min()
+    print "Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value
+
+    s_daily_pnls.to_frame().hist(bins=range(-500, 500, 10))
+    plt.savefig("daily_pnl_histogram.png")
+
+
+# summary 2
+def summarize_daily_pnl_in_bps(df):
+    # daily pnl in bps
+    s_daily_pnls = get_daily_pnls(df)
+    s_daily_abs_deltas = get_daily_abs_deltas(df)
+    s_daily_bps = s_daily_pnls * 10000.0 / s_daily_abs_deltas
+    daily_bps_mean = s_daily_bps.mean()
+    daily_bps_stddev = s_daily_bps.std()
+    k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_bps)
+    print "Daily Pnl in bps Summary: daily pnl in bps mean: %.2f" % daily_bps_mean
+    print "Daily Pnl in bps Summary: daily pnl in bps stddev: %.2f" % daily_bps_stddev
+    print "Daily Pnl in bps Summary: daily pnl in bps normal test p-value: %.4f" % normal_test_p_value
+
+    s_daily_bps.to_frame().hist(bins=range(-50, 50))
+    plt.savefig("daily_bps_histogram.png")
+
+
+def summarize_drawdown(df):
+    s_drawdown = get_drawdowns(df)
 
 
 def plot_fill_between(ax, series):
@@ -97,3 +122,5 @@ if __name__ == "__main__":
 
     df = pd.read_csv("pnls.csv", header=[0, 1], index_col=[0, 1])
     summarize_daily_pnl(df)
+    summarize_daily_pnl_in_bps(df)
+    summarize_drawdown(df)

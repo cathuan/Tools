@@ -48,6 +48,10 @@ def get_drawdowns(df):
     return df_drawdowns["drawdown"]
 
 
+def plot_fill_between(ax, series):
+    ax.fill_between(series.index, 0, series, color="r")
+
+
 # summary 1
 def summarize_daily_pnl(df):
     # daily pnls
@@ -57,6 +61,7 @@ def summarize_daily_pnl(df):
     k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
     print "Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean
     print "Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev
+    print "Daily Pnl Summary: daily pnl sharpe ratio: %.2f" % (daily_pnl_mean * 1.0 / daily_pnl_stddev)
     print "Daily Pnl Summary: daily pnl max win: $%.2f" % s_daily_pnls.max()
     print "Daily Pnl Summary: daily pnl max loss: $%.2f" % s_daily_pnls.min()
     print "Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value
@@ -82,12 +87,30 @@ def summarize_daily_pnl_in_bps(df):
     plt.savefig("daily_bps_histogram.png")
 
 
+# summary 3
+def summarize_daily_abs_delta(df):
+    s_daily_abs_delta = get_daily_abs_deltas(df)
+    daily_abs_delta_mean = s_daily_abs_delta.mean()
+    print "Daily abs delta Summary: daily abs delta mean: $%d" % daily_abs_delta_mean
+    print "Daily abs delta Summary: max daily abs delta: $%d" % s_daily_abs_delta.max()
+    print "Daily abs delta Summary: min daily abs delta: $%d" % s_daily_abs_delta.min()
+
+
+# summary 4
+def summarize_daily_delta(df):
+    s_daily_delta = get_daily_deltas(df)
+    daily_delta_mean = s_daily_delta.mean()
+    print "Daily delta Summary: daily delta mean: $%d" % daily_delta_mean
+    print "Daily delta Summary: max daily delta: $%d" % s_daily_delta.max()
+    print "Daily delta Summary: min daily delta: $%d" % s_daily_delta.min()
+
+
 def summarize_drawdown(df):
     s_drawdown = get_drawdowns(df)
+    print "Drawdown Summary: max drawdown: $%.2f" % s_drawdown.min()
 
-
-def plot_fill_between(ax, series):
-    ax.fill_between(series.index, 0, series, color="r")
+    plot_fill_between(plt, s_drawdown)
+    plt.savefig("drawdown.png")
 
 
 def plot(df):
@@ -123,4 +146,6 @@ if __name__ == "__main__":
     df = pd.read_csv("pnls.csv", header=[0, 1], index_col=[0, 1])
     summarize_daily_pnl(df)
     summarize_daily_pnl_in_bps(df)
+    summarize_daily_delta(df)
+    summarize_daily_abs_delta(df)
     summarize_drawdown(df)

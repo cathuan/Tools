@@ -105,6 +105,7 @@ def summarize_daily_delta(df):
     print "Daily delta Summary: min daily delta: $%d" % s_daily_delta.min()
 
 
+# summary 5
 def summarize_drawdown(df):
     s_drawdown = get_drawdowns(df)
     print "Drawdown Summary: max drawdown: $%.2f" % s_drawdown.min()

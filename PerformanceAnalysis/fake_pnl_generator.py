@@ -78,4 +78,3 @@ if __name__ == "__main__":
 
     prices = fake_price_generator()
     df = fake_strategy_output(prices)
-    assert False

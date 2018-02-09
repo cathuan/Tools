@@ -10,17 +10,22 @@ import matplotlib.pyplot as plt
 
 
 def get_daily_pnls(df):
+    """Return a pandas dataframe with index "date" and values 'pnl on the date'
+    """
     df_daily_pnls = df["Pnl"].reset_index().groupby("date")["pnl"].sum()
     return df_daily_pnls
 
 
 def get_daily_deltas(df):
-
+    """Return a pandas dataframe with index "date" and values 'delta on the date'
+    """
     df_daily_deltas = df["Delta"].reset_index().groupby("date")["delta"].sum()
     return df_daily_deltas
 
 
 def get_daily_abs_deltas(df):
+    """Return a pandas dataframe with index "date" and values 'abs delta on the date'
+    """
     df_abs_deltas = df["Delta"]["delta"].apply(abs)
     df_abs_deltas.index = df.index
     df_daily_abs_deltas = df_abs_deltas.reset_index().groupby("date").sum()
@@ -28,7 +33,6 @@ def get_daily_abs_deltas(df):
 
 
 def get_drawdowns(df_daily_pnls):
-
     drawdowns = []
     drawdown = 0
     for pnl in df_daily_pnls.values:
@@ -76,5 +80,5 @@ def plot(df):
 
 if __name__ == "__main__":
 
-    df = pd.read_csv("data.csv", header=[0,1], index_col=[0,1])
+    df = pd.read_csv("data.csv", header=[0, 1], index_col=[0, 1])
     plot(df)

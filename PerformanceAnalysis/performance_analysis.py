@@ -7,13 +7,28 @@ We assume
 """
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy.stats
 
 
 def get_daily_pnls(df):
     """Return a pandas dataframe with index "date" and values 'pnl on the date'
     """
-    df_daily_pnls = df["Pnl"].reset_index().groupby("date")["pnl"].sum()
-    return df_daily_pnls
+    s_daily_pnls = df["Pnl"].reset_index().groupby("date")["pnl"].sum()
+    return s_daily_pnls
+
+
+# summary 1
+def summarize_daily_pnl(df):
+    s_daily_pnls = get_daily_pnls(df)
+    daily_pnl_mean = s_daily_pnls.mean()
+    daily_pnl_stddev = s_daily_pnls.std()
+    k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
+    print "Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean
+    print "Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev
+    print "Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value
+
+    s_daily_pnls.to_frame().hist(bins=range(-500, 500, 10))
+    plt.savefig("daily_pnl_histogram.png")
 
 
 def get_daily_deltas(df):
@@ -80,5 +95,5 @@ def plot(df):
 
 if __name__ == "__main__":
 
-    df = pd.read_csv("data.csv", header=[0, 1], index_col=[0, 1])
-    plot(df)
+    df = pd.read_csv("pnls.csv", header=[0, 1], index_col=[0, 1])
+    summarize_daily_pnl(df)

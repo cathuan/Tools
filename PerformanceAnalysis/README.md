@@ -19,3 +19,11 @@ What are the questions we always ask when we analyze the performance of a strate
 # Basic required to test the program
 
 Need to create a function to automatically generate fake pnl data
+- index
+    - date
+    - symbol
+- columns
+    - Info, price; Info, probs; Info, volume
+    - Pnl, pnl
+    - Delta, delta
+    - Side, trade

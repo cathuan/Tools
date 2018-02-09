@@ -48,6 +48,16 @@ def get_drawdowns(df):
     return df_drawdowns["drawdown"]
 
 
+def get_daily_trades(df):
+
+    return df["Pnl"].reset_index().groupby("date")["pnl"].count()
+
+
+def get_trades_by_symbol(df):
+
+    return df["Pnl"].reset_index().groupby("symbol")["pnl"].count()
+
+
 def plot_fill_between(ax, series):
     ax.fill_between(series.index, 0, series, color="r")
 
@@ -106,12 +116,36 @@ def summarize_daily_delta(df):
 
 
 # summary 5
+def summarize_daily_trades(df):
+    s_daily_trades = get_daily_trades(df)
+    print "Daily count Summary: daily count mean: %.1f" % s_daily_trades.mean()
+    print "Daily count Summary: max daily count: %d" % s_daily_trades.max()
+    print "Daily count Summary: min daily count: %d" % s_daily_trades.min()
+
+
+# summary 6
 def summarize_drawdown(df):
     s_drawdown = get_drawdowns(df)
     print "Drawdown Summary: max drawdown: $%.2f" % s_drawdown.min()
 
     plot_fill_between(plt, s_drawdown)
     plt.savefig("drawdown.png")
+
+
+def pnl_by_symbols(df):
+
+    s_pnl_by_symbols = df["Pnl"].reset_index().groupby("symbol")["pnl"].sum()
+    print "Pnl Summary by Symbols: max pnl $%d in symbol %s" % (s_pnl_by_symbols.max(), s_pnl_by_symbols.idxmax())
+    print "Pnl Summary by Symbols: min pnl $%d in symbol %s" % (s_pnl_by_symbols.min(), s_pnl_by_symbols.idxmin())
+
+    s_pnl_by_symbols.to_frame().plot(kind="bar")
+    plt.savefig("pnl_by_symbols.png")
+
+
+def trades_by_symbols(df):
+    s_trades_by_symbol = get_trades_by_symbol(df)
+    print "Trades Summary by Symbols: max symbol count: %d" % s_trades_by_symbol.max()
+    print "Trades Summary by Symbols: min symbol count: %d" % s_trades_by_symbol.min()
 
 
 def plot(df):
@@ -146,7 +180,10 @@ if __name__ == "__main__":
 
     df = pd.read_csv("pnls.csv", header=[0, 1], index_col=[0, 1])
     summarize_daily_pnl(df)
+    summarize_daily_trades(df)
     summarize_daily_pnl_in_bps(df)
     summarize_daily_delta(df)
     summarize_daily_abs_delta(df)
     summarize_drawdown(df)
+    pnl_by_symbols(df)
+    trades_by_symbols(df)

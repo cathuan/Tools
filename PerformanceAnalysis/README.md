@@ -9,9 +9,9 @@ What are the questions we always ask when we analyze the performance of a strate
 + What's the sharpe ratio
 + What's the daily delta (so analyzing hedge cost and difficuity)
 + What's the absolute daily delta
-- What's the daily number of trades
++ What's the daily number of trades
 - Split data by symbols and see what's the maximum pnl of symbols
-    - The reason of doing this is to test whether the pnl highly depends one of the symbol
+    + The reason of doing this is to test whether the pnl highly depends one of the symbol
     - Remove one of the symbol and see whether this result is still good
 - Prove of performance is better than random walk (average > 0)
 - Smoothness of params grid search result

@@ -176,9 +176,8 @@ def plot(df):
     plt.show()
 
 
-if __name__ == "__main__":
-
-    df = pd.read_csv("pnls.csv", header=[0, 1], index_col=[0, 1])
+def summarize(filename):
+    df = pd.read_csv(filename, header=[0, 1], index_col=[0, 1])
     summarize_daily_pnl(df)
     summarize_daily_trades(df)
     summarize_daily_pnl_in_bps(df)
@@ -187,3 +186,8 @@ if __name__ == "__main__":
     summarize_drawdown(df)
     pnl_by_symbols(df)
     trades_by_symbols(df)
+
+
+if __name__ == "__main__":
+
+    summarize("pnls.csv")

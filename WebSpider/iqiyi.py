@@ -41,7 +41,7 @@ def request(url, params, timeout=5):
             data["finish_time"] = finish_time
             return data
         else:
-            print("Rejected request", file=sys.stderr)
+            print("Rejected request: ", r.url, file=sys.stderr)
             return None
     except requests.exceptions.ConnectTimeout as e:
         print("Timeout Error", e, file=sys.stderr)

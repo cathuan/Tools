@@ -3,6 +3,7 @@ import requests
 from lxml import etree
 import re
 from selenium import webdriver
+from bs4 import BeautifulSoup
 
 
 # in case old cookie method fails
@@ -74,8 +75,6 @@ def get_followers(cookie, username):
 
 
 """
-Some links for other purposes
-url = "http://energy.tv.weibo.cn/e/10173/index?display=0&retcode=6102"
 
 Followers details:
 This requires more information in cookie to access: _T_WM
@@ -86,12 +85,37 @@ Leave it until I know what happened
 
 url = "https://weibo.cn/1776448504/fans?page=19&display=0&retcode=6102"
 r = requests.get(url, cookies={"Cookie": "_T_WM=ec1a4454c0d9d6d28bb947142ca09f4f; SUB=_2A253gE9VDeThGeVM6FQZ9yvOyD6IHXVUi1EdrDV6PUJbkdBeLUbdkW1NTKWBvjMxvfXWbMrYJ01hTA-fdYsQshDp; SUHB=0OM0IZCuuDil4y; SCF=Aj52M7AisY2zemY_Am0nKcL71Og-kwj4KrbW9HkL8O51TjMxprJ7l2Sryhd6P9gtzV7sn1wG4n0t3QM9ZNxcc0w.; SSOLoginState=1518616325"}, headers=headers)
+
 """
+
+
+def get_hotness(cookie):
+
+    def get_name(tag):
+        return tag.find_all("h3")[0].text
+
+    def get_likehood(tag):
+        raw_likehood = tag.find_all("h4")[0].text
+        return raw_likehood.split(":")[1]
+
+    url = "http://energy.tv.weibo.cn/e/10173/index?display=0&retcode=6102"
+    r = requests.get(url, cookies=cookie, timeout=5)
+    soup = BeautifulSoup(r.content, "lxml")
+    for tag in soup.find_all("div", class_="card25"):
+        measures = tag.find_all("span")
+
+        name = get_name(tag)
+        likehood = get_likehood(tag)
+        mentioned = measures[0].text
+        interaction = measures[1].text
+        cheer_cards = measures[2].text
+        print name, likehood, mentioned, interaction, cheer_cards
 
 
 if __name__ == "__main__":
 
     cookie = get_cookie()
     username = "caizicaixukun"
-    followers = get_followers(cookie, username)
-    print username, followers
+    # followers = get_followers(cookie, username)
+    # print username, followers
+    get_hotness(cookie)

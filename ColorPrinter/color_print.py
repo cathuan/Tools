@@ -32,7 +32,7 @@ class Highlights(object):
     cyan = 46
     white = 47
 
-ENDC = '\033[0m'
+ENDC = 0
 
 
 def help():
@@ -74,7 +74,7 @@ def _get_color(color):
 
 def _get_colored_text(color, string):
 
-    return _get_color(color) + string + ENDC
+    return _get_color(color) + string + _get_color(ENDC)
 
 
 def color_print(*args):
@@ -88,13 +88,28 @@ def color_print(*args):
             else:
                 prev_arg = arg
         else:
-            assert isinstance(arg, str), "Input arguments must be colors (int) or text (string)"
+            assert isinstance(arg, str), "Input arguments must be text (string) since it's after a color"
             assert isinstance(prev_arg, int)
             output += _get_colored_text(prev_arg, arg)
             prev_arg = None
             if isinstance(arg, int):
                 prev_arg = arg
     print output
+
+
+def print_warning(warning_msg, detailed_msg):
+
+    color_print(Colors.blue, "[** %s **]" % warning_msg, " ", detailed_msg)
+
+
+def print_error(error_msg, detailed_msg):
+
+    color_print(Colors.red, "[** %s **]" % error_msg, " ", detailed_msg)
+
+
+def print_normal(normal_msg, detailed_msg):
+
+    color_print(Colors.green, "[** %s **]" % normal_msg, " ", detailed_msg)
 
 
 # Use color_print to print text with colors
@@ -108,3 +123,6 @@ if __name__ == "__main__":
     help()
     print
     color_print("no_color_text, ", Colors.red, "the next text is red, ", Highlights.red, "Need to highlight this, ", "no color again, ", "still no color, ", Colors.blue, "and see some blue.")
+    print_warning("WARNING", "failed to load")
+    print_error("ERROR", "impossible to load")
+    print_normal("LOG", "succeed to load")

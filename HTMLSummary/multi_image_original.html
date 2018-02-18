@@ -1,0 +1,465 @@
+<!-- print.view -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+   "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+<!-- sc/388 Common JavaScript -->
+<script language="JavaScript" type="text/javascript" src="/common.js"></script>
+
+<link rel="stylesheet" type="text/css" href="/styles/main.css" />
+<link rel="stylesheet" type="text/css" href="http://cdn.oreillystatic.com/oreilly/ml/css/stylesheet.css" />
+<link rel="stylesheet" type="text/css" href="http://cdn.oreillystatic.com/oreilly/ml/css/ml-special.css" />
+
+<script language="JavaScript" type="text/javascript" src="http://cdn.oreillystatic.com/assets/js/s_code.js"></script>
+/************* DO NOT ALTER ANYTHING BELOW THIS LINE ! **************/
+var s_code=s.t();if(s_code)document.write(s_code)//--></script>
+<!-- End SiteCatalyst code version: H.20.2. -->
+
+
+
+<script type="text/javascript" src="/tabber.js"></script>
+
+<!-- additional css -->
+<link rel="stylesheet" type="text/css" href="/styles/articles.css" />
+
+<!-- MyBuys libraries and style sheet -->
+<link href="http://t.p.mybuys.com/css/mbstyles.css" type="text/css" rel="stylesheet" id="mybuysstyles" />
+<script type="text/javascript" src="http://t.p.mybuys.com/js/mybuys3.js"></script>
+<script type="text/javascript" src="http://t.p.mybuys.com/clients/OREILLY/js/setup.js"></script>
+<!-- End MyBuys libraries and style sheet -->
+
+</head>
+<body id="onlamp">
+<h3>Image Toggling with the div Tag</h3>
+
+<p>Often, you may want to put a bunch of stuff, such as images, on a web page, but they take up too much room. Why not put just one image, and let the user use a switch to toggle between the other ones? It works something like this:</p>
+
+<table>
+<tr valign="top">
+<td>
+<div style="display:block" id="image1"><img src="pic1.png" alt="figure" /></div>
+
+<div style="display:none" id="image2"><img src="pic2.jpg" alt="figure" /></div>
+
+<div style="display:none" id="image3"><img src="http://www.onlamp.com/2007/08/23/graphics/pic3.jpg" alt="figure" /></div>
+</td>
+<td width="100%" align="right"><select onchange="ShowImage(parseInt(this.value), 'image');">
+<option selected="selected" value="1">Image 1</option>
+<option value="2">Image 2</option>
+<option value="3">Image 3</option></select>
+</td>
+</tr>
+</table>
+
+<p>This is actually extremely simple to do. Note that the browser is NOT contacting the server each time you switch images, switching is instantaneous. The trick? Put them all in the HTML, but only show one at a time! This is easily accomplished using the <code>div</code> tag and styles. Quite a number of very impressive effects can be achieved using this technique, as will be seen in the following examples. But first, let us examine how this current example actually works. Only one JavaScript function is used:</p>
+
+<pre><code>function ShowImage(page, tag)
+{
+    var i = 1;
+    var el;
+    while (el = document.getElementById(tag + i)) {
+        if (i == page)
+            el.style.display = 'block';
+        else
+            el.style.display = 'none';
+        i++;
+    }
+}</code></pre>
+
+<p>The actual images are then placed in the HTML at the location where they should appear, each within its own <code>div</code> tag, like so:</p>
+
+<pre><code>&lt;table&gt;
+    &lt;tr valign="top"&gt;
+        &lt;td&gt;
+            &lt;div style="display:block" id="image1"&gt;
+                &lt;img src="/onlamp/2007/08/23/graphics/pic1.jpg" /&gt;
+            &lt;/div&gt;
+            &lt;div style="display:none" id="image2"&gt;
+                &lt;img src="/onlamp/2007/08/23/graphics/pic2.jpg" /&gt;
+            &lt;/div&gt;
+            &lt;div style="display:none" id="image3"&gt;
+                &lt;img src="/onlamp/2007/08/23/graphics/pic3.jpg" /&gt;
+            &lt;/div&gt;
+        &lt;/td&gt;
+        &lt;td width="100%" align="right"&gt;
+            &lt;select onchange="ShowImage(parseInt(this.value), 'image');"&gt;
+                &lt;option selected="selected" value="1"&gt;Image 1&lt;/option&gt;
+                &lt;option value="2"&gt;Image 2&lt;/option&gt;
+                &lt;option value="3"&gt;Image 3&lt;/option&gt;
+            &lt;/select&gt;
+        &lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+
+<p>The table structure above is just for layout and can be ignored for the purposes of this discussion. The important part is the three sets of <code>div</code> tags in the first cell of the table. Note that the first has <code>display</code> set to <code>block</code> while the others have it set to <code>none</code>. Anything with <code>display</code> set to <code>none</code> is hidden from view and not drawn in the browser window, although it is still retrieved from the server and stored locally with the rest of the web page. Thus, initially we see only <em>pic1.jpg</em> and not the other two images.</p>
+
+<p>Then on the selector box we have attached a call to our JavaScript function when the <code>onchange</code> event occurs. This is triggered when the user makes a new selection with the selector. We pass two arguments: a reference to the selector node itself and the base <code>id</code> of the <code>div</code> tags containing the images (note these are <code>image1</code>, <code>image2</code> and <code>image3</code>, all starting with <code>image</code>).</p>
+
+<p>The function starts by getting the newly selected value indicating which image to display. <code>parseInt</code> is used to ensure it is stored as a number and not a string. Next we fetch a handle to the first <code>div</code> tag, in this case the one with <code>id image1</code>. If this is the image to be shown, we set its display style to <code>block</code>; for all others we set it to <code>none</code>. Then we proceed to the next tag (<code>image2</code>), and so on, until no more tags are found, at which point we exit.</p>
+
+<p>So, whenever a new item is selected in the drop-down box, the corresponding <code>div</code> block is revealed, and all others hidden. They all share the same physical space on the web page because they are right next to each other in the HTML. However, this is certainly not a restriction; we could have spread them across different areas of the page and had pictures appearing in various locations depending on the selection made, if desired. Similarly, we are not limited to images; just about anything can go between the <code>div</code> tags and be hidden and shown with a click of the mouse. This allows you to cram much more information onto a web page than you could normally, without requiring the user to do any scrolling!</p>
+
+<h3>Tabs: More Fun with div</h3>
+
+<p>Let us continue with another example of creative use of the <code>div</code> tag. Often it is desirable to make a web page with several "tabs" of information on it. Clicking on a tab shows the information on that tab, and hides the rest, much like how tabbed browsing works in the most recent round of web browsers. But, usually, clicking on an HTML tab like this causes the page to reload, which certainly disrupts the slickness of the interface. Wouldn't it be cooler if the information instantly appeared? Well thanks to the little trick we just learned in the previous example, it can. Try it out:</p>
+
+<table><tr height="200" valign="top"><td>
+<div style="display:block" id="tab1">
+<ul class="tab">
+<li class="tab_selected" onclick="ShowImage(1, 'tab');">
+Summary
+</li>
+<li onclick="ShowImage(2, 'tab');">
+Details
+</li>
+<li onclick="ShowImage(3, 'tab');">
+Known Issues
+</li>
+</ul>
+<p>Introducing the new, improved multi-widget.  It slices, it dices, it even does your taxes!  Order yours today!  Call now: 555-WIDG</p>
+</div>
+
+<div style="display:none" id="tab2">
+<ul class="tab">
+<li onclick="ShowImage(1, 'tab');">
+Summary
+</li>
+<li class="tab_selected" onclick="ShowImage(2, 'tab');">
+Details
+</li>
+<li onclick="ShowImage(3, 'tab');">
+Known Issues
+</li>
+</ul>
+<p>The multi-widget is a sophisticated piece of complex machinery designed by the country's leading nuclear physicists.  Order yours today and you will quickly learn how easy it is to do just about anything in no time, thanks to our patented EZ-Widge technology.</p>
+<p>
+Motor: 5HP<br />
+Dimensions: 8" x 5" x 2"<br />
+Weight: 212 g<br />
+Radioactivity: negligible
+</p>
+</div>
+
+<div style="display:none" id="tab3">
+<ul class="tab">
+<li onclick="ShowImage(1, 'tab');">
+Summary
+</li>
+<li onclick="ShowImage(2, 'tab');">
+Details
+</li>
+<li class="tab_selected" onclick="ShowImage(3, 'tab');">
+Known Issues
+</li>
+</ul>
+
+<ul><li>Do not use multi-widget near open flames</li>
+<li>Do not run while holding multi-widget</li>
+<li>Do not taunt multi-widget</li>
+<li>Multi-widget may, under certain as yet undetermined circumstances, spontaneously explode.  We hereby disclaim any libaility for personal injury caused as a result of multi-widget; for your safety, we recommend wearing body armor while handling multi-widget.</li>
+</ul>
+</div>
+</td></tr></table>
+<hr />
+
+<p>Not surprisingly, this example uses the exact same JavaScript function as the previous example, yet accomplishes a completely different effect. The remainder is done with a few simple CSS rules. Let's have a look at the HTML for this example:</p>
+
+<pre><code>&lt;div style="display:block" id="tab1"&gt;
+    &lt;ul class="tab"&gt;
+        &lt;li class="tab_selected" onclick="ShowImage(1, 'tab');"&gt;
+            Summary
+        &lt;/li&gt;
+        &lt;li onclick="ShowImage(2, 'tab');"&gt;
+            Details
+        &lt;/li&gt;
+        &lt;li onclick="ShowImage(3, 'tab');"&gt;
+            Known Issues
+        &lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;p&gt;
+        Introducing the new, improved multi-widget.  It slices, it dices, it even does
+        your taxes!  Order yours today!  Call now: 555-WIDG
+    &lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div style="display:none" id="tab2"&gt;
+    &lt;ul class="tab"&gt;
+        &lt;li onclick="ShowImage(1, 'tab');"&gt;
+            Summary
+        &lt;/li&gt;
+        &lt;li class="tab_selected" onclick="ShowImage(2, 'tab');"&gt;
+            Details
+        &lt;/li&gt;
+        &lt;li onclick="ShowImage(3, 'tab');"&gt;
+            Known Issues
+        &lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;p&gt;
+        The multi-widget is a sophisticated piece of complex machinery designed by the
+        country's leading nuclear physicists.  Order yours today and you will quickly
+        learn how easy it is to do just about anything in no time, thanks to our patented
+        EZ-Widge technology.
+    &lt;/p&gt;
+    &lt;p&gt;
+        Motor: 5HP&lt;br /&gt;
+        Dimensions: 8" x 5" x 2"&lt;br /&gt;
+        Weight: 212 g&lt;br /&gt;
+        Radioactivity: negligible
+    &lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div style="display:none" id="tab3"&gt;
+    &lt;ul class="tab"&gt;
+        &lt;li onclick="ShowImage(1, 'tab');"&gt;
+            Summary
+        &lt;/li&gt;
+        &lt;li onclick="ShowImage(2, 'tab');"&gt;
+            Details
+        &lt;/li&gt;
+        &lt;li class="tab_selected" onclick="ShowImage(3, 'tab');"&gt;
+            Known Issues
+        &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;ul&gt;
+        &lt;li&gt;Do not use multi-widget near open flames&lt;/li&gt;
+        &lt;li&gt;Do not run while holding multi-widget&lt;/li&gt;
+        &lt;li&gt;Do not taunt multi-widget&lt;/li&gt;
+        &lt;li&gt;
+            Multi-widget may, under certain as yet undetermined circumstances,
+            spontaneously explode.  We hereby disclaim any libaility for personal injury
+            caused as a result of multi-widget; for your safety, we recommend wearing
+            body armor while handling multi-widget.
+        &lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/div&gt;</code></pre>
+
+<p>Note that we have three <code>div</code> sections (one for each tab) just as we had one for each image in the previous example. And again, the first block is given <code>display:block</code> while the others are <code>display:none</code>, so only the first will be visible initially. Each of these sections begins by drawing the three tabs, with the selected one a different color than the others. So, we actually draw all three tabs over again on each tab! The contents of the tab follow, and can be arbitrary HTML. Note that the contents only appear once, only the actual HTML for the tabs themselves is repeated multiple times, so the "wasted" space is minimal.</p>
+
+<table id="page-break" width="100%" border="0" cellspacing="0" cellpadding="0" style="clear:left;"><tr><td><p class="secondary">
+Pages: <b>1</b>, <a href="/pub/a/onlamp/2007/08/23/advanced-javascript-ii.html?page=2">2</a>, <a href="/pub/a/onlamp/2007/08/23/advanced-javascript-ii.html?page=3">3</a>
+</p></td><td><p class="secondary" align="right">
+<a href="/pub/a/onlamp/2007/08/23/advanced-javascript-ii.html?page=2">
+Next Page<img src="/images/arrows/arrows-66.gif" border="0" alt="arrow" width="12" height="13" hspace="2" vspace="0" align="baseline"></a></p></td></tr></table>
+
+
+
+
+
+
+
+<!-- end article content -->
+
+
+
+
+<!-- end content -->
+
+
+<img src="/images/trans.gif" alt=" " width="400" height="1" /><br />
+
+
+
+<br /><br />
+
+
+<!-- end content -->
+
+</div><!-- #article -->
+
+</td>
+
+<td width="5" bgcolor="#ffffff"><!-- space between tiles/lede and web logs -->
+<img src="/images/trans.gif" alt=" " width="5" height="1" border="0" /></td>
+<td width="1" bgcolor="#cccccc"><!--vertical line between tiles/lede and weblogs -->
+<img src="/images/trans.gif" alt=" " width="1" height="1" border="0" /></td>
+<td width="8" bgcolor="#ffffff"><!-- space between tiles/lede and news -->
+<img src="/images/trans.gif" alt=" " width="8" height="1" border="0" /></td>
+
+<td width="170px" valign="top">
+<table width="170px" border="0" cellspacing="0" cellpadding="4">
+<tr>
+<td>
+
+<!-- MyBuys Zone and Parameters -->
+<div class="sidebar-item">
+<h3>Recommended for You</h3>
+<div class="sidebar-item-content" style="text-align: center; padding: 0px;">
+
+<!-- MyBuys Web Recommendation Zone -->
+<div mybuyszone="5"></div>
+<!-- End MyBuys Web Recommendation Zone -->
+
+
+
+
+<!-- debug: type: content_item, cs cat: onlamp, deli cat: linux -->
+<!-- MyBuys Page Parameters -->
+<script type="text/javascript">
+mybuys.setPageType("CONTENT_ITEM");
+mybuys.set("categoryid","http://purl.oreilly.com/resource-center/linux");
+</script>
+<!-- End MyBuys Page Parameters -->
+		
+
+
+</div>
+</div>
+</td>
+</tr>
+</table><br />
+
+</td>
+
+<td width="10" valign="top"><!-- space between news and sponsors -->
+<img src="/images/trans.gif" alt=" " width="10" height="1" border="0" /></td>
+<td width="160" bgcolor="#efefef" valign="top" align="center" class="secondary" style="border-right: 1px #FFF solid; padding: 10px;">
+<!-- Sponsors -->
+
+<p class="smalllist" style="text-align:center">Sponsored by:</p>
+<div align="center">
+<div style="margin:2px 0 20px 0;padding:5px;">
+
+<!--JavaScript Tag // Tag for network 5159: TechVertical // Website: OR - ONLamp // Page: ONLamp // Placement: ros_160x600 (425850) // created at: Oct 9, 2008 5:51:39 PM-->
+<script language="javascript"><!--
+document.write('<scr'+'ipt language="javascript1.1" src="http://adserver.adtechus.com/addyn/3.0/5159/425850/0/154/ADTECH;loc=100;target=_blank;key=key1+key2+key3+key4;grp=[group];misc='+new Date().getTime()+'"></scri'+'pt>');
+//-->
+</script><noscript><a href="http://adserver.adtechus.com/adlink/3.0/5159/425850/0/154/ADTECH;loc=300;key=key1+key2+key3+key4;grp=[group]" target="_blank"><img src="http://adserver.adtechus.com/adserv/3.0/5159/425850/0/154/ADTECH;loc=300;key=key1+key2+key3+key4;grp=[group]" border="0" width="160" height="600"></a></noscript>
+
+<!-- End of JavaScript Tag -->
+</div>
+</div>
+
+<br />
+</td>
+</tr>
+</table>
+<table width="100%"  border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td bgcolor="#cccccc"><img src="/images/trans.gif" alt=" " border="0" height="1" width="1"></td>
+</tr>
+<tr>
+<td>
+<!-- MyBuys Page Initialization -->
+<script type="text/javascript">
+mybuys.initPage();
+</script>
+<!-- End MyBuys Page Initialization -->
+			<div id="multiColumnFooter">
+				<div id="footer-branding">
+					<img src="//cdn.oreillystatic.com/images/sitewide-headers/logo02.gif" alt="O'reilly"/>
+					<p class="copyright">&copy; 2018, O&#8217;Reilly Media, Inc.</p>
+					<p>
+						<span class="phone-number">(707) 827-7019</span>
+						<span class="phone-number">(800) 889-8969</span>
+					</p>
+					<p class="trademarks">All trademarks and registered trademarks appearing on oreilly.com are the property of their respective owners.</p>
+				</div>
+				<div class="contentSectionBlock">
+					<div class="contentSectionContainer" >
+						<span id="footerColumn-1" class="contentSection">
+							<h3>About O'Reilly</h3>
+							<ul>
+                                                                <li><a href="#" id="capture_signin_link" class="capture_modal_open footer">Sign In</a></li>
+								<li><a class="footer" href="http://oreilly.com/academic/">Academic Solutions</a></li>
+								<li><a class="footer" href="http://oreilly.com/jobs/">Jobs</a></li>
+								<li><a class="footer" href="http://oreilly.com/contact.html">Contacts</a></li>
+								<li><a class="footer" href="http://oreilly.com/about/">Corporate Information</a></li>
+								<li><a class="footer" href="http://press.oreilly.com/index.html">Press Room</a></li>
+								<li><a class="footer" href="http://oreilly.com/oreilly/privacy.csp">Privacy Policy</a></li>
+								<li><a class="footer" href="http://oreilly.com/terms/">Terms of Service</a></li>
+								<li><a class="footer" href="http://oreilly.com/oreilly/author/intro.csp">Writing for O'Reilly</a></li>
+							</ul>
+						</span>
+					</div><!--end contentSectionContainer-->
+					<div class="contentSectionContainer" >
+						<span id="footerColumn-2" class="contentSection">
+							<h3>Community</h3>
+							<ul>
+								<li><a class="footer" href="http://oreilly.com/authors/">Authors</a></li>
+								<li><a class="footer" href="http://oreilly.com/community/">Community &amp; Featured Users</a></li>
+								<li><a class="footer" href="http://forums.oreilly.com/">Forums</a></li>
+								<li><a class="footer" href="https://members.oreilly.com/">Membership</a></li>
+								<li><a class="footer" href="http://elists.oreilly.com/">Newsletters</a></li>
+								<li><a class="footer" href="http://answers.oreilly.com/">O'Reilly Answers</a></li>
+								<li><a class="footer" href="http://oreilly.com/feeds/">RSS Feeds</a></li>
+								<li><a class="footer" href="http://ug.oreilly.com/">User Groups</a></li>
+							</ul>
+						</span>
+					</div><!--end contentSectionContainer-->
+					<div class="contentSectionContainer" >
+						<span id="footerColumn-3" class="contentSection">
+							<h3>Partner Sites</h3>
+							<ul>
+								<li><a class="footer" href="http://makezine.com/">makezine.com</a></li>
+								<li><a class="footer" href="http://makerfaire.com/">makerfaire.com</a></li>
+								<li><a class="footer" href="http://craftzine.com/">craftzine.com</a></li>
+								<li><a class="footer" href="http://igniteshow.com/">igniteshow.com</a></li>
+								<li><a class="footer" href="https://www.x.com/community/ppx/devzone">PayPal Developer Zone</a></li>
+								<li><a class="footer" href="http://blogs.forbes.com/oreillymedia/">O'Reilly Insights on Forbes.com</a></li>
+							</ul>
+						</span>
+					</div><!--end contentSectionContainer-->
+					<div class="contentSectionContainer" >
+						<span id="footerColumn-4" class="contentSection">
+							<h3>Shop O'Reilly</h3>
+							<ul>
+								<li><a class="footer" href="http://shop.oreilly.com/category/customer-service.do">Customer Service</a></li>
+								<li><a class="footer" href="http://shop.oreilly.com/category/customer-service.do">Contact Us</a></li>
+								<li><a class="footer" href="http://shop.oreilly.com/category/customer-service/shipping-information.do">Shipping Information</a></li>
+								<li><a class="footer" href="http://shop.oreilly.com/category/customer-service/ordering-payment.do">Ordering &amp; Payment</a></li>							
+								<li><a class="footer" href="http://shop.oreilly.com/category/customer-service/oreilly-guarantee.do">The O'Reilly Guarantee</a></li>
+							</ul>
+						</span>
+					</div> <!--end contentSectionContainer-->
+					<div style="clear:both;"></div>
+				</div><!--end contentSectionBlock-->
+			</div><!--end multiColumnFooter-->
+
+<!-- autocomplete scripts - autocomplete_data.js updated 8/23/12 -cp -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/yui/2.8.0r4/build/utilities/utilities.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/yui/2.8.0r4/build/datasource/datasource-min.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/yui/2.8.0r4/build/autocomplete/autocomplete-min.js"></script>
+<script type="text/javascript" src="//content.atomz.com/sp10049ed9/publish/autocomplete_data.js"></script>  
+</td>
+</tr>
+</table>
+
+
+<!-- start Vibrant Media IntelliTXT Tooltip style sheet -->
+
+<style type="text/css">
+.iTt{
+    FONT-FAMILY:       Verdana, Arial, Helvetica;
+    FONT-SIZE:         11px;
+    FONT-STYLE:        normal;
+    FONT-WEIGHT:       normal;
+    COLOR:             black;
+    BACKGROUND-COLOR:  lightyellow;
+    BORDER:            black 1px solid;
+    PADDING:           2px;
+}
+</style>
+
+<!-- end Vibrant Media IntelliTXT style sheet -->
+
+<!-- start Vibrant Media IntelliTXT script section -->
+<!-- script type="text/javascript" src="http://onlamp.us.intellitxt.com/intellitxt/front.asp?ipid=2281"></script -->
+<!-- end Vibrant Media IntelliTXT script section -->
+
+
+<!--Google Analytics -->
+<script src="http://www.google-analytics.com/urchin.js" type="text/
+javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-31074-5";
+urchinTracker();
+</script></body>
+
+
+</html>
+
+
+

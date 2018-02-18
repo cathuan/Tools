@@ -9,6 +9,7 @@ from plotly import tools
 import datetime
 import numpy as np
 from collections import defaultdict
+from bs4 import BeautifulSoup
 
 
 class HTMLPlotter(object):
@@ -34,7 +35,7 @@ class HTMLPlotter(object):
                         }
                     }
                 }
-            </script>
+            </script>""", """
             <style type="text/css">
                 .start-hide{
                     display:none;
@@ -63,6 +64,7 @@ class HTMLPlotter(object):
     def __init__(self, title):
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
         self.title = title
+        self.common_js_script_for_each_plot = None
 
     def plot(self, x, y, graph_name, subplot_name, color, label):
         """Main function used to generate graphs in a comparatively simple API
@@ -102,7 +104,12 @@ class HTMLPlotter(object):
                     fig.append_trace(trace, index, 1)
             fig["layout"].update(height=200*num_subplots, width=1000, title="graph_name")
             div = plot(fig, output_type="div")
-            divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
+            soup = BeautifulSoup(div)
+            js_script, plot_script = soup.find_all("script")
+            plot_div_info = str(soup.find_all("div")[1].prettify())
+            if self.common_js_script_for_each_plot is None:
+                self.common_js_script_for_each_plot = str(js_script.prettify())
+            divs += '<div class="start-hide" id="graph%s">' % graph_index + plot_div_info + str(plot_script.prettify()) + '</div>'
         return divs
 
     def generate_html(self):
@@ -117,7 +124,7 @@ class HTMLPlotter(object):
         # place title between the first and second pieces
         # place dropdown menu code between the second and third pieces
         # place graphs between the third and fourth pieces
-        return self.html_template[0] + self.title + self.html_template[1] + options + self.html_template[2] + graphs + self.html_template[3]
+        return self.html_template[0] + self.title + self.html_template[1] + self.common_js_script_for_each_plot + self.html_template[2] + options + self.html_template[3] + graphs + self.html_template[4]
 
 
 def example():

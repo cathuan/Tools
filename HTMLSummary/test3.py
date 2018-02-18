@@ -173,6 +173,62 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "position", "red", "abs delta")
 
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "user", "pnl", "green", "gross pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "user", "pnl", "blue", "net pnl")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "user", "position", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "user", "position", "red", "abs delta")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "test2", "pnl", "green", "gross pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "test2", "pnl", "blue", "net pnl")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "test2", "position", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "test2", "position", "red", "abs delta")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "pig", "pnl", "green", "gross pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "pig", "pnl", "blue", "net pnl")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "pig", "position", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "pig", "position", "red", "abs delta")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "player", "pnl", "green", "gross pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "player", "pnl", "blue", "net pnl")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "player", "position", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "player", "position", "red", "abs delta")
+
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)
     f.close()

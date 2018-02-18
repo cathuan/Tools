@@ -1,9 +1,11 @@
+# This program depends on plotly external package
+# Anyone wants to run this program need to download it from pypi and build to local Python path
+
 from __future__ import print_function
 import numpy as np
 from plotly.offline import plot
 from plotly.graph_objs import Scatter, Line
 import datetime
-# from plotly import tools
 from collections import defaultdict
 
 
@@ -58,17 +60,33 @@ class HTMLPlotter(object):
 
     def __init__(self):
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
-        self.plot_summary = defaultdict(lambda: set())
 
     def plot(self, x, y, graph_name, subplot_name, color, label):
+        """Main function used to generate graphs in a comparatively simple API
+        input:
+        =====
+        x: data in x-axis
+        y: data in y-axis
+        graph_name: the name shown in the selector. All graphs with the same graph_name will be shown together
+        subplot_name: the title of each subgraph
+        color: the color of the curve
+        label: the label of the curve
+        """
         self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color), name=label))
 
+    def get_ordered_subplot_names(self, graph_name):
+        """Determine the order of subplots in each graph
+        """
+        return self.graphs[graph_name]
+
     def generate_html(self):
+        """Generate html code of the graphs with selections
+        """
 
         divs = ''
         for graph_index, graph_name in enumerate(sorted(self.graphs)):
             graph_divs = ''
-            for subplot_name in self.graphs[graph_name]:
+            for subplot_name in self.get_ordered_subplot_names(graph_name):
                 data = self.graphs[graph_name][subplot_name]
                 layout = dict(title=subplot_name, height=500, width=1000)
                 fig = dict(data=data, layout=layout)
@@ -84,8 +102,7 @@ class HTMLPlotter(object):
         return self.html_template[0] + options + self.html_template[1] + divs + self.html_template[2]
 
 
-if __name__ == "__main__":
-
+def example():
     html_plotter = HTMLPlotter()
     date1 = datetime.date(2014, 1, 1)
 
@@ -125,3 +142,8 @@ if __name__ == "__main__":
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)
     f.close()
+
+
+if __name__ == "__main__":
+
+    example()

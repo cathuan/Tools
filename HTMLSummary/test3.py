@@ -7,6 +7,7 @@ from plotly.offline import plot
 from plotly.graph_objs import Scatter, Line
 import datetime
 from collections import defaultdict
+from plotly import tools
 
 
 class HTMLPlotter(object):
@@ -85,14 +86,16 @@ class HTMLPlotter(object):
 
         divs = ''
         for graph_index, graph_name in enumerate(sorted(self.graphs)):
-            graph_divs = ''
-            for subplot_name in self.get_ordered_subplot_names(graph_name):
-                data = self.graphs[graph_name][subplot_name]
-                layout = dict(title=subplot_name, height=500, width=1000)
-                fig = dict(data=data, layout=layout)
-                div = plot(fig, output_type="div")
-                graph_divs += div
-            divs += '<div class="start-hide" id="graph%s">' % graph_index + graph_divs + '</div>'
+            subplot_names = list(set(self.graphs[graph_name].keys()))
+            num_subplots = len(subplot_names)
+            fig = tools.make_subplots(rows=num_subplots, cols=1, subplot_titles=subplot_names)
+            for subplot_name, data in self.graphs[graph_name].items():
+                index = subplot_names.index(subplot_name) + 1  # row number starts with 1 instead of 0
+                for trace in data:
+                    fig.append_trace(trace, index, 1)
+            fig["layout"].update(height=500*num_subplots, width=1000, title="graph_name")
+            div = plot(fig, output_type="div")
+            divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
 
         options = ''
         for graph_index, graph_name in enumerate(sorted(self.graphs)):
@@ -107,35 +110,59 @@ def example():
     date1 = datetime.date(2014, 1, 1)
 
     print("graph1 pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "pnl", "blue", "net pnl")
 
     print("graph1 pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "position", "red", "abs delta")
 
     print("graph1 pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "value", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "value", "red", "abs delta")
+
+    print("graph1 pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "task", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "task", "red", "abs delta")
+
+    print("graph1 pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "user", "blue", "delta")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
+    html_plotter.plot(x, y, "very long very long very long name", "user", "red", "abs delta")
+
+    print("graph1 pnl")
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "pnl", "blue", "net pnl")
 
     print("graph1 pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(10000)]
-    y = np.random.normal(0, 0.01, 10000).cumsum()
+    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
+    y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "position", "red", "abs delta")
 
     print("HTML")

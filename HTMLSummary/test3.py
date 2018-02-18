@@ -17,7 +17,7 @@ class HTMLPlotter(object):
     <html>
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-            <title>oec2003</title>
+            <title>""", """</title>
             <script language="JavaScript" type="text/JavaScript">
                 function show(targetid) {
                     if (document.getElementById) {
@@ -60,8 +60,9 @@ class HTMLPlotter(object):
     </html>
     """]
 
-    def __init__(self):
+    def __init__(self, title):
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
+        self.title = title
 
     def plot(self, x, y, graph_name, subplot_name, color, label):
         """Main function used to generate graphs in a comparatively simple API
@@ -76,44 +77,51 @@ class HTMLPlotter(object):
         """
         self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color), name=label))
 
-    def get_ordered_subplot_names(self, graph_name):
+    def _get_ordered_subplot_names(self, graph_name):
         """Determine the order of subplots in each graph
         """
         return list(set(self.graphs[graph_name].keys()))
+
+    def _get_drop_menu_html(self):
+        options = ''
+        for graph_index, graph_name in enumerate(sorted(self.graphs)):
+            option = '<option value="%s">%s</option>' % (graph_index, graph_name)
+            options += option
+        return options
+
+    def _get_graphs_html(self):
+        divs = ''
+        for graph_index, graph_name in enumerate(sorted(self.graphs)):
+            subplot_names = self._get_ordered_subplot_names(graph_name)
+            num_subplots = len(subplot_names)
+            fig = tools.make_subplots(rows=num_subplots, cols=1, subplot_titles=subplot_names,
+                                      shared_xaxes=True)
+            for subplot_name, data in self.graphs[graph_name].items():
+                index = subplot_names.index(subplot_name) + 1  # row number starts with 1 instead of 0
+                for trace in data:
+                    fig.append_trace(trace, index, 1)
+            fig["layout"].update(height=200*num_subplots, width=1000, title="graph_name")
+            div = plot(fig, output_type="div")
+            divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
+        return divs
 
     def generate_html(self):
         """Generate html code of the graphs with selections
         """
 
-        # create html div code in string
-        divs = ''
-        for graph_index, graph_name in enumerate(sorted(self.graphs)):
-            subplot_names = self.get_ordered_subplot_names(graph_name)
-            num_subplots = len(subplot_names)
-            fig = tools.make_subplots(rows=num_subplots, cols=1, subplot_titles=subplot_names)
-            for subplot_name, data in self.graphs[graph_name].items():
-                index = subplot_names.index(subplot_name) + 1  # row number starts with 1 instead of 0
-                for trace in data:
-                    fig.append_trace(trace, index, 1)
-            fig["layout"].update(height=500*num_subplots, width=1000, title="graph_name")
-            div = plot(fig, output_type="div")
-            divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
+        options = self._get_drop_menu_html()
+        graphs = self._get_graphs_html()
 
-        # create dropdown menus
-        options = ''
-        for graph_index, graph_name in enumerate(sorted(self.graphs)):
-            option = '<option value="%s">%s</option>' % (graph_index, graph_name)
-            options += option
-
-        # HTML template is separated into 3 pieces
-        # js function to choose the graph is contained in the first piece: function show
-        # place dropdown menu code between the first and second pieces
-        # place graphs between the second and third pieces
-        return self.html_template[0] + options + self.html_template[1] + divs + self.html_template[2]
+        # HTML template is separated into 4 pieces
+        # js function to choose the graph is contained in the second piece: function show
+        # place title between the first and second pieces
+        # place dropdown menu code between the second and third pieces
+        # place graphs between the third and fourth pieces
+        return self.html_template[0] + self.title + self.html_template[1] + options + self.html_template[2] + graphs + self.html_template[3]
 
 
 def example():
-    html_plotter = HTMLPlotter()
+    html_plotter = HTMLPlotter("test html interactive plots")
     date1 = datetime.date(2014, 1, 1)
 
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]

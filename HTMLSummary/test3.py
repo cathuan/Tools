@@ -1,13 +1,14 @@
-# This program depends on plotly external package
+# XXX: This program depends on plotly external package
 # Anyone wants to run this program need to download it from pypi and build to local Python path
 
 from __future__ import print_function
-import numpy as np
 from plotly.offline import plot
 from plotly.graph_objs import Scatter, Line
-import datetime
-from collections import defaultdict
 from plotly import tools
+
+import datetime
+import numpy as np
+from collections import defaultdict
 
 
 class HTMLPlotter(object):
@@ -78,15 +79,16 @@ class HTMLPlotter(object):
     def get_ordered_subplot_names(self, graph_name):
         """Determine the order of subplots in each graph
         """
-        return self.graphs[graph_name]
+        return list(set(self.graphs[graph_name].keys()))
 
     def generate_html(self):
         """Generate html code of the graphs with selections
         """
 
+        # create html div code in string
         divs = ''
         for graph_index, graph_name in enumerate(sorted(self.graphs)):
-            subplot_names = list(set(self.graphs[graph_name].keys()))
+            subplot_names = self.get_ordered_subplot_names(graph_name)
             num_subplots = len(subplot_names)
             fig = tools.make_subplots(rows=num_subplots, cols=1, subplot_titles=subplot_names)
             for subplot_name, data in self.graphs[graph_name].items():
@@ -97,11 +99,16 @@ class HTMLPlotter(object):
             div = plot(fig, output_type="div")
             divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
 
+        # create dropdown menus
         options = ''
         for graph_index, graph_name in enumerate(sorted(self.graphs)):
             option = '<option value="%s">%s</option>' % (graph_index, graph_name)
             options += option
 
+        # HTML template is separated into 3 pieces
+        # js function to choose the graph is contained in the first piece: function show
+        # place dropdown menu code between the first and second pieces
+        # place graphs between the second and third pieces
         return self.html_template[0] + options + self.html_template[1] + divs + self.html_template[2]
 
 
@@ -109,7 +116,6 @@ def example():
     html_plotter = HTMLPlotter()
     date1 = datetime.date(2014, 1, 1)
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "pnl", "green", "gross pnl")
@@ -117,7 +123,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "pnl", "blue", "net pnl")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "position", "blue", "delta")
@@ -125,7 +130,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "position", "red", "abs delta")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "value", "blue", "delta")
@@ -133,7 +137,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "value", "red", "abs delta")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "task", "blue", "delta")
@@ -141,7 +144,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "task", "red", "abs delta")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "user", "blue", "delta")
@@ -149,7 +151,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "very long very long very long name", "user", "red", "abs delta")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "pnl", "green", "gross pnl")
@@ -157,7 +158,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "pnl", "blue", "net pnl")
 
-    print("graph1 pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "position", "blue", "delta")
@@ -165,7 +165,6 @@ def example():
     y = np.random.normal(0, 0.01, 100).cumsum()
     html_plotter.plot(x, y, "test", "position", "red", "abs delta")
 
-    print("HTML")
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)
     f.close()

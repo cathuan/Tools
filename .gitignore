@@ -5,6 +5,9 @@ __pycache__/
 *.swp
 .DS_Store
 HTMLSummary/*.html
+PerformanceAnalysis/*.html
+PerformanceAnalysis/*.png
+*.csv
 
 # C extensions
 *.so

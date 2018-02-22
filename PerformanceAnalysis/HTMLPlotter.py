@@ -96,7 +96,7 @@ class HTMLPlotter(object):
             <center>
                 Choose the graph you want:
                 <td width="100%" align="right">
-                    <select onchange="show(parseInt(this.value));">{dropdown_menu_html}</select>
+                    <select onchange="show(parseInt(this.value));">{dropdown_options}</select>
                 </td>
             </center>
             <center>{graph_divs}</center>
@@ -107,8 +107,8 @@ class HTMLPlotter(object):
     def __init__(self, title):
         self.title = title
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
-        self.graph_orders = []  # the order we put graphs in dropdown menu
-        self.subgraph_orders = defaultdict(lambda: [])  # the order of each subgraphs in a graph
+        self.graph_orders = []
+        self.subgraph_orders = defaultdict(lambda: [])
 
     def plot(self, x, y, label=None, color=None, linestyle=None, linewidth=None,
              marker=None, markersize=None, markerfacecolor=None):
@@ -124,11 +124,11 @@ class HTMLPlotter(object):
             self.subgraph_orders[graph_name].append(subplot_name)
 
     def _get_drop_menu_html(self):
-        dropdown_menu_html = ''
+        dropdown_options = ''
         for graph_index, graph_name in enumerate(self.graph_orders):
             option = '<option value="%s">%s</option>' % (graph_index, graph_name)
-            dropdown_menu_html += option
-        return dropdown_menu_html
+            dropdown_options += option
+        return dropdown_options
 
     def _get_graphs_html(self):
         divs = ''
@@ -161,14 +161,14 @@ class HTMLPlotter(object):
         """Generate html code of the graphs with selections
         """
 
-        dropdown_menu_html = self._get_drop_menu_html()
+        dropdown_options = self._get_drop_menu_html()
         graph_divs = self._get_graphs_html()
 
         # HTML template has 3 formats
         # title: title of the graph
-        # dropdown_menu_html: divs and selections used to determine the dropdown menus
+        # dropdown_options: divs and selections used to determine the dropdown menus
         # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
-        return self.html_template.format(title=self.title, dropdown_menu_html=dropdown_menu_html, graph_divs=graph_divs)
+        return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
 
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
         pass

@@ -64,7 +64,6 @@ class HTMLPlotter(object):
     def __init__(self, title):
         self.title = title
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
-        self.default_graph_name = None
         self.graph_orders = []
         self.subgraph_orders = defaultdict(lambda: [])
 
@@ -83,8 +82,6 @@ class HTMLPlotter(object):
             self.graph_orders.append(graph_name)
         if subplot_name not in self.subgraph_orders[graph_name]:
             self.subgraph_orders[graph_name].append(subplot_name)
-        if self.default_graph_name is None:
-            self.default_graph_name = graph_name
 
         if kind == "drawdown":
             fill = "tonexty"
@@ -124,7 +121,7 @@ class HTMLPlotter(object):
             # We will show only one set of graphs each time. The default one is the first one we start to plot.
             # This one will be set with class "default".
             # Other graphs are originally hiden. The class will be "start-hide"
-            if graph_name == self.default_graph_name:
+            if graph_index == 0:
                 divs += '<div class="default" id="graph%s">' % graph_index + div + '</div>'
             else:
                 divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'

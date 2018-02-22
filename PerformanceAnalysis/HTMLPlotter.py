@@ -3,52 +3,13 @@
 
 from __future__ import print_function
 from plotly.offline import plot
-from plotly.graph_objs import Scatter  # Line, Maker from here as well
+# from plotly.graph_objs import Scatter  # Line, Maker from here as well
 from plotly import tools
+import matplotlib.pyplot as plt
 
 import datetime
 import numpy as np
 from collections import defaultdict
-
-# Regular Expression to extract marker style
-# re.match(r".*_set_(.*) of", repr(fig[0]._marker._marker_function)).group(1).replace("_", "-")
-mat_markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left",
-        ">": "triangle-right", "*": "star", "x": "x", "d": "diamond"}
-
-
-def matplotlib_plot_to_plotly_scatter(x, y, label=None, color=None, linestyle=None, linewidth=None,
-        marker=None, markersize=None, markerfacecolor=None):
-
-    if linestyle is not None and marker is not None:
-        mode = "lines+markers"
-    elif linestyle is None:
-        mode = "markers"
-    elif marker is None:
-        mode = "lines"
-    else:  # both None
-        mode = "lines"
-
-    line = {}
-    if color is not None:
-        line["color"] = color
-    if linestyle is not None and linestyle != "solid":
-        line["dash"] = linestyle
-    if linewidth is not None:
-        line["width"] = linewidth
-
-    marker_ = {}
-    if marker is not None:
-        marker_["symbol"] = mat_markers[marker]
-    if markersize is not None:
-        marker_["size"] = markersize
-    if markerfacecolor is not None:
-        marker_["color"] = markerfacecolor
-    elif color is not None:
-        marker_["color"] = color
-    else:
-        marker_["color"] = "blue"
-
-    return Scatter(x=x, y=y, mode=mode, line=line, marker=marker_, name=label)
 
 
 class HTMLPlotter(object):
@@ -103,25 +64,19 @@ class HTMLPlotter(object):
 
     def __init__(self, title):
         self.title = title
-        self.graphs = defaultdict(lambda: defaultdict(lambda: []))
+        self.graphs = defaultdict(lambda: [])
         self.graph_orders = []
-        self.subgraph_orders = defaultdict(lambda: [])
 
-    def plot(self, x, y, graph_name, subplot_name, color, label, kind=None):
-        """Main function used to generate graphs in a comparatively simple API
-        input:
-        =====
-        x: data in x-axis
-        y: data in y-axis
-        graph_name: the name shown in the selector. All graphs with the same graph_name will be shown together
-        subplot_name: the title of each subgraph
-        color: the color of the curve
-        label: the label of the curve
-        """
+    def add_matplotlib_fig(self, fig, graph_name):
         if graph_name not in self.graph_orders:
             self.graph_orders.append(graph_name)
-        if subplot_name not in self.subgraph_orders[graph_name]:
-            self.subgraph_orders[graph_name].append(subplot_name)
+
+        plotly_fig = tools.mpl_to_plotly(fig)
+
+        for i in range(len(plotly_fig.data)-1):
+            data = plotly_fig.data[i]
+            data.xaxis = plotly_fig.data[-1].xaxis
+        self.graphs[graph_name] = plotly_fig
 
     def _get_drop_menu_html(self):
         dropdown_options = ''
@@ -133,15 +88,8 @@ class HTMLPlotter(object):
     def _get_graphs_html(self):
         divs = ''
         for graph_index, graph_name in enumerate(self.graph_orders):
-            subplot_names = self.subgraph_orders[graph_name]
-            num_subplots = len(subplot_names)
-            fig = tools.make_subplots(rows=num_subplots, cols=1, subplot_titles=subplot_names,
-                                      shared_xaxes=True)
-            for subplot_name, data in self.graphs[graph_name].items():
-                index = subplot_names.index(subplot_name) + 1  # row number starts with 1 instead of 0
-                for trace in data:
-                    fig.append_trace(trace, index, 1)
-            fig["layout"].update(height=300*num_subplots, width=1000, title=graph_name)
+            fig = self.graphs[graph_name]
+            fig["layout"].update(height=1000, width=1000)
             div = plot(fig,
                        output_type="div",  # output div html strings instead of a full html file
                        include_plotlyjs=False  # the js script plotly.js is included in html_template via cdn. It's pretty big.
@@ -176,15 +124,52 @@ def example():
     date1 = datetime.date(2014, 1, 1)
     total_num = 1000
 
+    fig, axes = plt.subplots(nrows=3, sharex=True)
+
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot(x, y, color="red", linestyle="solid", marker="^", markersize=15)
+    axes[0].plot(x,y,"ro-")
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot(x, y, color="red", marker="^", markersize=15)
+    axes[0].plot(x,y,"b")
+    axes[0].set_title("graph 1")
+
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot(x, y, color="red", linestyle="dash", linewidth=3)
+    axes[1].plot(x,y,"g--")
+    axes[1].set_title("User used this")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
+    y = np.random.normal(0, 0.01, total_num).cumsum()
+    axes[2].plot(x, y, "g^", markersize=15)
+    axes[0].grid()
+    axes[1].grid()
+    axes[2].grid()
+
+    html_plotter.add_matplotlib_fig(fig, "very very long")
+
+    fig, axes = plt.subplots(nrows=3, sharex=True)
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
+    y = np.random.normal(0, 0.01, total_num).cumsum()
+    axes[0].plot(x,y,"ro-")
+    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
+    y = np.random.normal(0, 0.01, total_num).cumsum()
+    axes[0].plot(x,y,"b")
+    axes[0].set_title("graph 1")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
+    y = np.random.normal(0, 0.01, total_num).cumsum()
+    axes[1].plot(x,y,"g--")
+
+    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
+    y = np.random.normal(0, 0.01, total_num).cumsum()
+    axes[2].plot(x, y, "g^", markersize=15)
+    axes[0].grid()
+    axes[1].grid()
+    axes[2].grid()
+
+    html_plotter.add_matplotlib_fig(fig, "test")
 
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)

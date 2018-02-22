@@ -14,55 +14,62 @@ from bs4 import BeautifulSoup
 
 class HTMLPlotter(object):
 
-    html_template = ["""
+    html_template = """
     <html>
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-            <title>""", """</title>
+            <title>
+
+                {title}
+
+            </title>
             <script language="JavaScript" type="text/JavaScript">
-                function show(targetid) {
-                    if (document.getElementById) {
+                function show(targetid) {{
+                    if (document.getElementById) {{
                         var i = 0;
                         var el;
-                        while (el = document.getElementById("graph" + i)) {
-                            if (i == targetid) {
+                        while (el = document.getElementById("graph" + i)) {{
+                            if (i == targetid) {{
                                 el.style.display = "block";
-                            }
-                            else {
+                            }}
+                            else {{
                                 el.style.display = "none";
-                            }
+                            }}
                             i++;
-                        }
-                    }
-                }
-            </script>""", """
+                        }}
+                    }}
+                }}
+            </script>
+
+            {common_js_script}
+
             <style type="text/css">
-                .start-hide{
-                    display:none;
-                }
-                .default{
-                    display:block;
-                }
+                .start-hide{{display:none;}}
+                .default{{display:block;}}
             </style>
         </head>
         <body>
             <center>
                 Choose the graph you want:
                 <td width="100%" align="right">
-                    <select onchange="show(parseInt(this.value));">""",
-                """
+                    <select onchange="show(parseInt(this.value));">
+
+                        {dropdown_options}
+
                     </select>
                 </td>
             </center>
-            <center>""",
-            """
+            <center>
+
+                {graph_divs}
+
             </center>
         </body>
     </html>
-    """]
+    """
 
     def __init__(self, title):
-        self.graph = defaultdict(lambda: defaultdict(lambda: []))
+        self.graphs = defaultdict(lambda: defaultdict(lambda: []))
         self.title = title
         self.common_js_script_for_each_plot = None
         self.default_graph_name = None
@@ -139,16 +146,16 @@ class HTMLPlotter(object):
         """Generate html code of the graphs with selections
         """
 
-        options = self._get_drop_menu_html()
-        graphs = self._get_graphs_html()
+        dropdown_options = self._get_drop_menu_html()
+        graph_divs = self._get_graphs_html()
 
-        # HTML template is separated into 5 pieces
-        # js function to choose the graph is contained in the second piece: function show
-        # place title between the 1st and 2nd pieces
-        # place common js script between the 2nd and 3rd pieces
-        # place dropdown menu code between the 3rd and 4th pieces
-        # place graphs between the 4th and 5th pieces
-        return self.html_template[0] + self.title + self.html_template[1] + self.common_js_script_for_each_plot + self.html_template[2] + options + self.html_template[3] + graphs + self.html_template[4]
+        # HTML template has 4 formats
+        # title: title of the graph
+        # common_js_script: the commonly generated js scripts to help interacting with graphs
+        # dropdown_options: divs and selections used to determine the dropdown menus
+        # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
+        return self.html_template.format(title=self.title, common_js_script=self.common_js_script_for_each_plot,
+                                         dropdown_options=dropdown_options, graph_divs=graph_divs)
 
 
 def example():

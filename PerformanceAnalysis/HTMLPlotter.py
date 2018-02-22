@@ -10,7 +10,11 @@ import datetime
 import numpy as np
 from collections import defaultdict
 
+# TODO: Plot with plt and extract features from the axes internally
+# TODO: translate matplotlib arguments into plotly arguments
 
+# Regular Expression to extract marker style
+# re.match(r".*_set_(.*) of", repr(fig[0]._marker._marker_function)).group(1).replace("_", "-")
 mat_markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left",
         ">": "triangle-right", "*": "star", "x": "x", "d": "diamond"}
 
@@ -142,7 +146,7 @@ class HTMLPlotter(object):
                        output_type="div",  # output div html strings instead of a full html file
                        include_plotlyjs=False  # the js script plotly.js is included in html_template via cdn. It's pretty big.
                        )
-            div = str(div)
+            div = str(div)  # unicode to str
 
             # We will show only one set of graphs each time. The default one is the first one we start to plot.
             # This one will be set with class "default".
@@ -165,6 +169,9 @@ class HTMLPlotter(object):
         # dropdown_menu_html: divs and selections used to determine the dropdown menus
         # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
         return self.html_template.format(title=self.title, dropdown_menu_html=dropdown_menu_html, graph_divs=graph_divs)
+
+    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
+        pass
 
 
 def example():

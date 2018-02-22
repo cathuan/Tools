@@ -62,7 +62,7 @@ class HTMLPlotter(object):
     """]
 
     def __init__(self, title):
-        self.graphs = defaultdict(lambda: defaultdict(lambda: []))
+        self.graph = defaultdict(lambda: defaultdict(lambda: []))
         self.title = title
         self.common_js_script_for_each_plot = None
         self.default_graph_name = None

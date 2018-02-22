@@ -3,94 +3,12 @@
 
 from __future__ import print_function
 from plotly.offline import plot
-from plotly.graph_objs import Scatter, Line, Marker
+from plotly.graph_objs import Scatter  # Line, Maker from here as well
 from plotly import tools
 
 import datetime
 import numpy as np
 from collections import defaultdict
-
-
-class PlotFormat(object):
-
-    # color support for matplotlib
-    colors = {"b": "blue", "r": "red", "k": "black", "g": "green", "c": "cyan", "y": "yellow", "m": "magenta",
-              "w": "white"}
-
-    # marker format
-    markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left", ">": "triangle-right",
-               "*": "star", "x": "x", "d": "diamond"}
-
-    # style format: solid_line (None), dashed line, or dash dot line, or dotted line style
-    styles = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
-
-    def __init__(self, format_string):
-
-        self.mode = None
-        self._color_format = self._get_color_format(format_string)
-        self._marker_format = self._get_marker_format(format_string)
-        self._style_format = self._get_style_format(format_string)
-
-    def _get_color_format(self, format_string):
-        color_format = None
-        for matplotlib_format in PlotFormat.colors.keys():
-            if matplotlib_format in format_string:
-                assert color_format is None
-                color_format = PlotFormat.colors[matplotlib_format]
-        return color_format
-
-    def _get_marker_format(self, format_string):
-        marker_format = None
-        for matplotlib_format in PlotFormat.markers.keys():
-            if matplotlib_format in format_string:
-                assert marker_format is None
-                marker_format = PlotFormat.markers[matplotlib_format]
-        return marker_format
-
-    def _get_style_format(self, format_string):
-        style_format = None
-        for matplotlib_format in PlotFormat.styles.keys():
-            if matplotlib_format in format_string:
-                # matplotlib style format has "-" as line, but it has "--" and "-." as well..
-                # so need to add an extra logic in case we can find "-" in both "--" and "-." case.
-                if matplotlib_format == "-" and style_format is not None:
-                    continue
-                assert style_format is not None or style_format == "-"
-                style_format = PlotFormat.styles[matplotlib_format]
-        return style_format
-
-    def get_argument(self):
-        has_line = (self._style_format is not None)
-        has_marker = (self._marker_format is not None)
-        if has_marker and has_line:
-            self.mode = "lines+markers"
-        elif not has_marker and has_line:
-            self.mode = "lines"
-        elif has_marker and not has_line:
-            self.mode = "markers"
-        else:
-            self.mode = "lines"  # if no style nor marker is supplied, defaulted as lines
-
-    def get_color(self):
-        if self._color_format is None:
-            return "blue"  # default color is blue
-        else:
-            return self._color_format
-
-    def get_line_argument(self):
-
-        assert self.mode == "lines" or self.mode == "lines+markers"
-        color = self.get_color()
-        style = self._style_format
-        return {"color": color, "dash": style}
-
-    def get_marker_argument(self):
-
-        assert self.mode == "markers" or self.mode == "lines+markers"
-        color = self.get_color()
-        symbol = self._marker_format
-        assert symbol is not None
-        return {"color": color, "symbol": symbol}
 
 
 mat_markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left",
@@ -182,18 +100,14 @@ class HTMLPlotter(object):
     </html>
     """
 
-    # color support for matplotlib
-    colors = {"b": "blue", "r": "red", "k": "black", "g": "green", "c": "cyan", "y": "yellow", "m": "magenta",
-              "w": "white"}
-
     def __init__(self, title):
         self.title = title
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
         self.graph_orders = []  # the order we put graphs in dropdown menu
         self.subgraph_orders = defaultdict(lambda: [])  # the order of each subgraphs in a graph
 
-    def plot_(self, x, y, label=None, color=None, linestyle=None, linewidth=None,
-              marker=None, markersize=None, markerfacecolor=None):
+    def plot(self, x, y, label=None, color=None, linestyle=None, linewidth=None,
+             marker=None, markersize=None, markerfacecolor=None):
 
         trace = matplotlib_plot_to_plotly_scatter(x, y, label, color, linestyle, linewidth,
                                                   marker, markersize, markerfacecolor)
@@ -204,35 +118,6 @@ class HTMLPlotter(object):
             self.graph_orders.append(graph_name)
         if subplot_name not in self.subgraph_orders[graph_name]:
             self.subgraph_orders[graph_name].append(subplot_name)
-
-    def plot(self, x, y, graph_name, subplot_name, color, label, kind=None):
-        """Main function used to generate graphs in a comparatively simple API
-        input:
-        =====
-        x: data in x-axis
-        y: data in y-axis
-        graph_name: the name shown in the selector. All graphs with the same graph_name will be shown together
-        subplot_name: the title of each subgraph
-        color: the color of the curve
-        label: the label of the curve
-        """
-        if graph_name not in self.graph_orders:
-            self.graph_orders.append(graph_name)
-        if subplot_name not in self.subgraph_orders[graph_name]:
-            self.subgraph_orders[graph_name].append(subplot_name)
-
-        if kind == "drawdown":
-            fill = "tonexty"
-            fillcolor = "red"
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color),
-                                                         name=label, fill=fill, fillcolor=fillcolor))
-        elif kind is None:
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, mode="lines",
-                                                                 line=Line(width=2, color=color, dash=None),
-                                                                 marker=Marker(symbol="x", size=10),
-                                                                 name=label))
-        else:
-            assert False, "kind %s is not supported" % kind
 
     def _get_drop_menu_html(self):
         dropdown_menu_html = ''
@@ -285,131 +170,17 @@ class HTMLPlotter(object):
 def example():
     html_plotter = HTMLPlotter("test html interactive plots")
     date1 = datetime.date(2014, 1, 1)
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "pnl", "cyan", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "pnl", "red", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "position", "yellow", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "position", "black", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "value", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "value", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "task", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "task", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "user", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "user", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test", "pnl", "blue", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test", "position", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "user", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "user", "pnl", "blue", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "user", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "user", "position", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test2", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test2", "pnl", "blue", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test2", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "test2", "position", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "pig", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "pig", "pnl", "blue", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "pig", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "pig", "position", "red", "abs delta")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "player", "pnl", "green", "gross pnl")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "player", "pnl", "blue", "net pnl")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "player", "position", "blue", "delta")
-    x = [date1 + datetime.timedelta(days=n) for n in range(100)]
-    y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "player", "position", "red", "abs delta")
-
-    f = open("test3.html", "w")
-    print(html_plotter.generate_html(), file=f)
-    f.close()
-
-
-def example2():
-    html_plotter = HTMLPlotter("test html interactive plots")
-    date1 = datetime.date(2014, 1, 1)
     total_num = 1000
 
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot_(x, y, color="red", linestyle="solid", marker="^", markersize=15)
+    html_plotter.plot(x, y, color="red", linestyle="solid", marker="^", markersize=15)
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot_(x, y, color="red", marker="^", markersize=15)
+    html_plotter.plot(x, y, color="red", marker="^", markersize=15)
     x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
     y = np.random.normal(0, 0.01, total_num).cumsum()
-    html_plotter.plot_(x, y, color="red", linestyle="dash", linewidth=3)
+    html_plotter.plot(x, y, color="red", linestyle="dash", linewidth=3)
 
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)
@@ -418,4 +189,4 @@ def example2():
 
 if __name__ == "__main__":
 
-    example2()
+    example()

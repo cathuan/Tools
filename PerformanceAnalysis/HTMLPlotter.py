@@ -61,6 +61,10 @@ class HTMLPlotter(object):
     </html>
     """
 
+    # color support for matplotlib
+    colors = {"b": "blue", "r": "red", "k": "black", "g": "green", "c": "cyan", "y": "yellow", "m": "magenta",
+              "w": "white"}
+
     def __init__(self, title):
         self.title = title
         self.graphs = defaultdict(lambda: defaultdict(lambda: []))
@@ -83,13 +87,20 @@ class HTMLPlotter(object):
         if subplot_name not in self.subgraph_orders[graph_name]:
             self.subgraph_orders[graph_name].append(subplot_name)
 
+        # translate matplotlib color to plotly color
+        if color in HTMLPlotter.colors:
+            plot_color = HTMLPlotter.colors[color]
+        else:
+            plot_color = color
+
         if kind == "drawdown":
             fill = "tonexty"
             fillcolor = "red"
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color), name=label,
-                                                                 fill=fill, fillcolor=fillcolor))
+            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=plot_color),
+                                                                 name=label, fill=fill, fillcolor=fillcolor))
         elif kind is None:
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color), name=label))
+            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=plot_color),
+                                                                 name=label))
         else:
             assert False, "kind %s is not supported" % kind
 
@@ -147,17 +158,17 @@ def example():
 
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "pnl", "green", "gross pnl")
+    html_plotter.plot(x, y, "very long very long very long name", "pnl", "cyan", "gross pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "pnl", "blue", "net pnl")
+    html_plotter.plot(x, y, "very long very long very long name", "pnl", "magenta", "net pnl")
 
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "position", "blue", "delta")
+    html_plotter.plot(x, y, "very long very long very long name", "position", "yellow", "delta")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "position", "red", "abs delta")
+    html_plotter.plot(x, y, "very long very long very long name", "position", "black", "abs delta")
 
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()

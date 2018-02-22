@@ -10,9 +10,6 @@ import datetime
 import numpy as np
 from collections import defaultdict
 
-# TODO: Plot with plt and extract features from the axes internally
-# TODO: translate matplotlib arguments into plotly arguments
-
 # Regular Expression to extract marker style
 # re.match(r".*_set_(.*) of", repr(fig[0]._marker._marker_function)).group(1).replace("_", "-")
 mat_markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left",
@@ -110,19 +107,6 @@ class HTMLPlotter(object):
         self.graph_orders = []
         self.subgraph_orders = defaultdict(lambda: [])
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    def plot(self, x, y, label=None, color=None, linestyle=None, linewidth=None,
-             marker=None, markersize=None, markerfacecolor=None):
-
-        trace = matplotlib_plot_to_plotly_scatter(x, y, label, color, linestyle, linewidth,
-                                                  marker, markersize, markerfacecolor)
-        self.graphs["test"]["pnl"].append(trace)
-        graph_name = "test"
-        subplot_name = "pnl"
-=======
-=======
->>>>>>> parent of d3f0109... Add comments and rename a variable
     def plot(self, x, y, graph_name, subplot_name, color, label, kind=None):
         """Main function used to generate graphs in a comparatively simple API
         input:
@@ -134,7 +118,6 @@ class HTMLPlotter(object):
         color: the color of the curve
         label: the label of the curve
         """
->>>>>>> parent of d3f0109... Add comments and rename a variable
         if graph_name not in self.graph_orders:
             self.graph_orders.append(graph_name)
         if subplot_name not in self.subgraph_orders[graph_name]:
@@ -186,15 +169,6 @@ class HTMLPlotter(object):
         # dropdown_options: divs and selections used to determine the dropdown menus
         # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
         return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        pass
-=======
->>>>>>> parent of d3f0109... Add comments and rename a variable
-=======
->>>>>>> parent of d3f0109... Add comments and rename a variable
 
 
 def example():

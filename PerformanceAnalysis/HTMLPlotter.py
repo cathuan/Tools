@@ -105,11 +105,11 @@ class HTMLPlotter(object):
             assert False, "kind %s is not supported" % kind
 
     def _get_drop_menu_html(self):
-        options = ''
+        dropdown_options = ''
         for graph_index, graph_name in enumerate(self.graph_orders):
             option = '<option value="%s">%s</option>' % (graph_index, graph_name)
-            options += option
-        return options
+            dropdown_options += option
+        return dropdown_options
 
     def _get_graphs_html(self):
         divs = ''

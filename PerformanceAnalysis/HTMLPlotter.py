@@ -111,6 +111,7 @@ class HTMLPlotter(object):
         self.subgraph_orders = defaultdict(lambda: [])
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     def plot(self, x, y, label=None, color=None, linestyle=None, linewidth=None,
              marker=None, markersize=None, markerfacecolor=None):
 
@@ -120,6 +121,8 @@ class HTMLPlotter(object):
         graph_name = "test"
         subplot_name = "pnl"
 =======
+=======
+>>>>>>> parent of d3f0109... Add comments and rename a variable
     def plot(self, x, y, graph_name, subplot_name, color, label, kind=None):
         """Main function used to generate graphs in a comparatively simple API
         input:
@@ -184,9 +187,12 @@ class HTMLPlotter(object):
         # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
         return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
         pass
+=======
+>>>>>>> parent of d3f0109... Add comments and rename a variable
 =======
 >>>>>>> parent of d3f0109... Add comments and rename a variable
 

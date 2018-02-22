@@ -3,12 +3,78 @@
 
 from __future__ import print_function
 from plotly.offline import plot
-from plotly.graph_objs import Scatter, Line
+from plotly.graph_objs import Scatter, Line, Marker
 from plotly import tools
 
 import datetime
 import numpy as np
 from collections import defaultdict
+
+
+class PlotFormat(object):
+
+    # color support for matplotlib
+    colors = {"b": "blue", "r": "red", "k": "black", "g": "green", "c": "cyan", "y": "yellow", "m": "magenta",
+              "w": "white"}
+
+    # marker format
+    markers = {"o": "circle", "v": "triangle-down", "^": "triangle-up", "<": "triangle-left", ">": "triangle-right",
+               "*": "star", "x": "x", "d": "diamond"}
+
+    # style format: solid_line (None), dashed line, or dash dot line, or dotted line style
+    styles = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
+
+    def __init__(self, format_string):
+
+        self._color_format = self._get_color_format(format_string)
+        self._marker_format = self._get_marker_format(format_string)
+        self._style_format = self._get_style_format(format_string)
+
+    def _get_color_format(self, format_string):
+        color_format = None
+        for matplotlib_format in PlotFormat.colors.keys():
+            if matplotlib_format in format_string:
+                assert color_format is None
+                color_format = PlotFormat.colors[matplotlib_format]
+        return color_format
+
+    def _get_marker_format(self, format_string):
+        marker_format = None
+        for matplotlib_format in PlotFormat.markers.keys():
+            if matplotlib_format in format_string:
+                assert marker_format is None
+                marker_format = PlotFormat.markers[matplotlib_format]
+        return marker_format
+
+    def _get_style_format(self, format_string):
+        style_format = None
+        for matplotlib_format in PlotFormat.styles.keys():
+            if matplotlib_format in format_string:
+                # matplotlib style format has "-" as line, but it has "--" and "-." as well..
+                # so need to add an extra logic in case we can find "-" in both "--" and "-." case.
+                if matplotlib_format == "-" and style_format is not None:
+                    continue
+                assert style_format is not None or style_format == "-"
+                style_format = PlotFormat.styles[matplotlib_format]
+        return style_format
+
+    def get_mode(self):
+        has_line = (self._style_format is not None)
+        has_marker = (self._marker_format is not None)
+        if has_marker and has_line:
+            return "lines+markers"
+        elif not has_marker and has_line:
+            return "lines"
+        elif has_marker and not has_line:
+            return "markers"
+        else:
+            return "lines"  # if no style nor marker is supplied, defaulted as lines
+
+    def get_color(self):
+        if self._color_format is None:
+            return "blue"  # default color is blue
+        else:
+            return self._color_format
 
 
 class HTMLPlotter(object):
@@ -87,19 +153,15 @@ class HTMLPlotter(object):
         if subplot_name not in self.subgraph_orders[graph_name]:
             self.subgraph_orders[graph_name].append(subplot_name)
 
-        # translate matplotlib color to plotly color
-        if color in HTMLPlotter.colors:
-            plot_color = HTMLPlotter.colors[color]
-        else:
-            plot_color = color
-
         if kind == "drawdown":
             fill = "tonexty"
             fillcolor = "red"
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=plot_color),
-                                                                 name=label, fill=fill, fillcolor=fillcolor))
+            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=color),
+                                                         name=label, fill=fill, fillcolor=fillcolor))
         elif kind is None:
-            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, line=Line(width=2, color=plot_color),
+            self.graphs[graph_name][subplot_name].append(Scatter(x=x, y=y, mode="lines+markers",
+                                                                 line=Line(width=2, color=color, dash=None),
+                                                                 marker=Marker(symbol="x", size=10),
                                                                  name=label))
         else:
             assert False, "kind %s is not supported" % kind
@@ -161,7 +223,7 @@ def example():
     html_plotter.plot(x, y, "very long very long very long name", "pnl", "cyan", "gross pnl")
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()
-    html_plotter.plot(x, y, "very long very long very long name", "pnl", "magenta", "net pnl")
+    html_plotter.plot(x, y, "very long very long very long name", "pnl", "red", "net pnl")
 
     x = [date1 + datetime.timedelta(days=n) for n in range(100)]
     y = np.random.normal(0, 0.01, 100).cumsum()

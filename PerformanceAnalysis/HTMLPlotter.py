@@ -29,8 +29,6 @@ class HTMLAxis(object):
 
 
 # TODO: to_html()
-# TODO: xlabel and ylabel
-# TODO: xlim and ylim
 
 class HTMLPlotter(object):
 
@@ -71,6 +69,26 @@ class HTMLPlotter(object):
 
     def grid(self):
         pass  # automatically the grid is on. Actually I think it should be on all the time..
+
+    def xlabel(self, xlabel):
+        # Call in this way means there is only one subplot in the canvas
+        # So the only x-axis is xaxis1
+        self.p_fig["layout"]["xaxis1"].update(title=xlabel)
+
+    def ylabel(self, xlabel):
+        # Call in this way means there is only one subplot in the canvas
+        # So the only y-axis is yaxis1
+        self.p_fig["layout"]["yaxis1"].update(title=xlabel)
+
+    def xlim(self, xmin, xmax):
+        # Call in this way means there is only one subplot in the canvas
+        # So the only x-axis is xaxis1
+        self.p_fig["layout"]["xaxis1"].update(range=[xmin, xmax])
+
+    def ylim(self, ymin, ymax):
+        # Call in this way means there is only one subplot in the canvas
+        # So the only y-axis is yaxis1
+        self.p_fig["layout"]["yaxis1"].update(range=[ymin, ymax])
 
     def show(self):
         plot(self.p_fig, filename="tmp_test.html")

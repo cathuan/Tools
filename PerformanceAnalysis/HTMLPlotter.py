@@ -156,18 +156,6 @@ class HTMLPlotter_(object):
                                   showlegend=True)
         return fig
 
-    def plot(self, *args, **kwargs):
-        if self.fig is None:
-            self.fig = tools.make_subplots(rows=1, cols=1, showlegend=True)
-        m_fig = plt.figure()
-        plt.plot(*args, **kwargs)
-        p_fig = tools.mpl_to_plotly(m_fig)
-        trace = p_fig["data"][0]
-        self.fig.append_trace(trace)
-
-    def title(self, title):
-        self.fig["layout"].update(title=title)
-
     def show(self):
         plot(self.fig, filename="tmp_test.html")
 
@@ -223,8 +211,8 @@ class HTMLPlotter_(object):
         return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
 
 
-def example():
-    html_plotter = HTMLPlotter("test html interactive plots")
+def example2():
+    html_plotter = HTMLPlotter_("test html interactive plots")
     date1 = datetime.date(2014, 1, 1)
     total_num = 10
 
@@ -278,6 +266,9 @@ def example():
     f = open("test3.html", "w")
     print(html_plotter.generate_html(), file=f)
     f.close()
+
+def example():
+    html_plotter = HTMLPlotter()
 
 
 if __name__ == "__main__":

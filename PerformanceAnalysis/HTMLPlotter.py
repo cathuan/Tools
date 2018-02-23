@@ -28,30 +28,53 @@ class HTMLAxis(object):
         self.fig.append_trace(trace, self.row, self.col)
 
 
+# TODO: to_html()
+# TODO: xlabel and ylabel
+# TODO: xlim and ylim
+
 class HTMLPlotter(object):
 
-    def __init__(self, title):
-        self.fig = None
+    def __init__(self):
+        self.p_fig = None
 
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey,
-                                  showlegend=True)
-        return fig
+        p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
+        p_fig["layout"].update(showlegend=True)
+        return p_fig
+
+    # for some reason I can't extract linestyle automatically using mpl_to_plotly.
+    # do it manually
+    def update_linestyle(self, m_fig, trace):
+        linestyles_from_m_to_p = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
+
+        # hiden deep in matplotlib fig..
+        m_linestyle = m_fig._axstack._elements[0][1][1].lines[0]._linestyle
+        p_linestyle = linestyles_from_m_to_p[m_linestyle]
+        trace["line"].update(dash=p_linestyle)
+        return trace
 
     def plot(self, *args, **kwargs):
-        if self.fig is None:
-            self.fig = tools.make_subplots(rows=1, cols=1, showlegend=True)
+        if self.p_fig is None:
+            self.p_fig = tools.make_subplots(rows=1, cols=1)
         m_fig = plt.figure()
         plt.plot(*args, **kwargs)
         p_fig = tools.mpl_to_plotly(m_fig)
         trace = p_fig["data"][0]
-        self.fig.append_trace(trace)
+        trace = self.update_linestyle(m_fig, trace)
+        self.p_fig.append_trace(trace, 1, 1)
 
     def title(self, title):
-        self.fig["layout"].update(title=title)
+        self.p_fig["layout"].update(title=title)
+
+    def legend(self):
+        self.p_fig["layout"].update(showlegend=True)
+
+    def grid(self):
+        pass  # automatically the grid is on. Actually I think it should be on all the time..
 
     def show(self):
-        plot(self.fig, filename="tmp_test.html")
+        plot(self.p_fig, filename="tmp_test.html")
+        self.p_fig = None  # clean buffer
 
 
 class HTMLPlotter_(object):

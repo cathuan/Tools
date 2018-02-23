@@ -12,7 +12,49 @@ import numpy as np
 from collections import defaultdict
 
 
+class HTMLAxis(object):
+
+    def __init__(self, fig, row=1, col=1):
+        self.fig = fig
+        self.row = row
+        self.col = col
+
+    # mimic matplotlib axes API (used for subplots)
+    def plot(self, *args, **kwargs):
+        m_fig = plt.figure()
+        plt.plot(*args, **kwargs)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        self.fig.append_trace(trace, self.row, self.col)
+
+
 class HTMLPlotter(object):
+
+    def __init__(self, title):
+        self.fig = None
+
+    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
+        fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey,
+                                  showlegend=True)
+        return fig
+
+    def plot(self, *args, **kwargs):
+        if self.fig is None:
+            self.fig = tools.make_subplots(rows=1, cols=1, showlegend=True)
+        m_fig = plt.figure()
+        plt.plot(*args, **kwargs)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        self.fig.append_trace(trace)
+
+    def title(self, title):
+        self.fig["layout"].update(title=title)
+
+    def show(self):
+        plot(self.fig, filename="tmp_test.html")
+
+
+class HTMLPlotter_(object):
 
     html_template = """
     <html>
@@ -66,6 +108,27 @@ class HTMLPlotter(object):
         self.title = title
         self.graphs = defaultdict(lambda: [])
         self.graph_orders = []
+        self.fig = None
+
+    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
+        fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey,
+                                  showlegend=True)
+        return fig
+
+    def plot(self, *args, **kwargs):
+        if self.fig is None:
+            self.fig = tools.make_subplots(rows=1, cols=1, showlegend=True)
+        m_fig = plt.figure()
+        plt.plot(*args, **kwargs)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        self.fig.append_trace(trace)
+
+    def title(self, title):
+        self.fig["layout"].update(title=title)
+
+    def show(self):
+        plot(self.fig, filename="tmp_test.html")
 
     def add_matplotlib_fig(self, fig, graph_name):
         if graph_name not in self.graph_orders:
@@ -92,7 +155,7 @@ class HTMLPlotter(object):
             fig["layout"].update(height=1000, width=1000)
             div = plot(fig,
                        output_type="div",  # output div html strings instead of a full html file
-                       include_plotlyjs=False  # the js script plotly.js is included in html_template via cdn. It's pretty big.
+                       include_plotlyjs=False  # the js script plotly.js is included in html_template via cdn.
                        )
             div = str(div)  # unicode to str
 
@@ -122,7 +185,7 @@ class HTMLPlotter(object):
 def example():
     html_plotter = HTMLPlotter("test html interactive plots")
     date1 = datetime.date(2014, 1, 1)
-    total_num = 1000
+    total_num = 10
 
     fig, axes = plt.subplots(nrows=3, sharex=True)
 

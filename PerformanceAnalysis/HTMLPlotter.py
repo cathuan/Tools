@@ -33,6 +33,28 @@ class HTMLPlt(object):
         self.p_fig = None
         self.axes = []
 
+    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
+        assert self.p_fig is None
+        assert len(self.axes) == 0
+
+        self.p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
+        if nrows == 1:
+            for col in range(ncols):
+                axes = HTMLPlotter(self.p_fig, 1, col+1)
+                self.axes.append(axes)
+        elif ncols == 1:
+            for row in range(nrows):
+                axes = HTMLPlotter(self.p_fig, row+1, 1)
+                self.axes.append(axes)
+        else:
+            for row in range(nrows):
+                self.axes.append([])
+                for col in range(ncols):
+                    axes = HTMLPlotter(self.p_fig, row+1, col+1)
+                    self.axes[row].append(axes)
+        
+        return self.p_fig, self.axes
+        
     def plot(self, *args, **kwargs):
         if self.p_fig is None:
             assert len(self.axes) == 0
@@ -73,6 +95,7 @@ class HTMLPlt(object):
     def show(self):
         plot(self.p_fig, filename="tmp_test.html")
         self.p_fig = None  # clean buffer
+        self.axes = []
 
 
 # TODO: to_html()
@@ -96,8 +119,6 @@ class HTMLPlotter(object):
         return trace
 
     def plot(self, *args, **kwargs):
-        if self.p_fig is None:
-            self.p_fig = tools.make_subplots(rows=1, cols=1)
         m_fig = plt.figure()
         plt.plot(*args, **kwargs)
         p_fig = tools.mpl_to_plotly(m_fig)
@@ -161,7 +182,6 @@ class HTMLPlotter_(object):
         self.graphs = defaultdict(lambda: [])
         self.graph_orders = []
         self.fig = None
-
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
         p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
         p_fig["layout"].update(showlegend=True)

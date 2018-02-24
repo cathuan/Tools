@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 from plotly.offline import plot
-# from plotly.graph_objs import Scatter  # Line, Maker from here as well
 from plotly import tools
 import matplotlib.pyplot as plt
 
@@ -28,38 +27,19 @@ class HTMLAxis(object):
         self.fig.append_trace(trace, self.row, self.col)
 
 
-# TODO: to_html()
-
-class HTMLPlotter(object):
+class HTMLPlt(object):
 
     def __init__(self):
         self.p_fig = None
-
-    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
-        p_fig["layout"].update(showlegend=True)
-        return p_fig
-
-    # for some reason I can't extract linestyle automatically using mpl_to_plotly.
-    # do it manually
-    def update_linestyle(self, m_fig, trace):
-        linestyles_from_m_to_p = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
-
-        # hiden deep in matplotlib fig..
-        m_linestyle = m_fig._axstack._elements[0][1][1].lines[0]._linestyle
-        p_linestyle = linestyles_from_m_to_p[m_linestyle]
-        trace["line"].update(dash=p_linestyle)
-        return trace
+        self.axes = []
 
     def plot(self, *args, **kwargs):
         if self.p_fig is None:
+            assert len(self.axes) == 0
             self.p_fig = tools.make_subplots(rows=1, cols=1)
-        m_fig = plt.figure()
-        plt.plot(*args, **kwargs)
-        p_fig = tools.mpl_to_plotly(m_fig)
-        trace = p_fig["data"][0]
-        trace = self.update_linestyle(m_fig, trace)
-        self.p_fig.append_trace(trace, 1, 1)
+            self.axes = [HTMLPlotter(self.p_fig, 1, 1)]
+
+        self.axes[0].plot(*args, **kwargs)
 
     def title(self, title):
         self.p_fig["layout"].update(title=title)
@@ -93,6 +73,37 @@ class HTMLPlotter(object):
     def show(self):
         plot(self.p_fig, filename="tmp_test.html")
         self.p_fig = None  # clean buffer
+
+
+# TODO: to_html()
+
+class HTMLPlotter(object):
+
+    def __init__(self, p_fig, row, col):
+        self.p_fig = p_fig
+        self.row = row
+        self.col = col
+
+    # for some reason I can't extract linestyle automatically using mpl_to_plotly.
+    # do it manually
+    def _update_linestyle(self, m_fig, trace):
+        linestyles_from_m_to_p = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
+
+        # hiden deep in matplotlib fig..
+        m_linestyle = m_fig._axstack._elements[0][1][1].lines[0]._linestyle
+        p_linestyle = linestyles_from_m_to_p[m_linestyle]
+        trace["line"].update(dash=p_linestyle)
+        return trace
+
+    def plot(self, *args, **kwargs):
+        if self.p_fig is None:
+            self.p_fig = tools.make_subplots(rows=1, cols=1)
+        m_fig = plt.figure()
+        plt.plot(*args, **kwargs)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        trace = self._update_linestyle(m_fig, trace)
+        self.p_fig.append_trace(trace, self.row, self.col)
 
 
 class HTMLPlotter_(object):
@@ -152,9 +163,9 @@ class HTMLPlotter_(object):
         self.fig = None
 
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey,
-                                  showlegend=True)
-        return fig
+        p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
+        p_fig["layout"].update(showlegend=True)
+        return p_fig
 
     def show(self):
         plot(self.fig, filename="tmp_test.html")
@@ -211,66 +222,19 @@ class HTMLPlotter_(object):
         return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
 
 
-def example2():
-    html_plotter = HTMLPlotter_("test html interactive plots")
-    date1 = datetime.date(2014, 1, 1)
-    total_num = 10
-
-    fig, axes = plt.subplots(nrows=3, sharex=True)
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[0].plot(x,y,"ro-")
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[0].plot(x,y,"b")
-    axes[0].set_title("graph 1")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[1].plot(x,y,"g--")
-    axes[1].set_title("User used this")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[2].plot(x, y, "g^", markersize=15)
-    axes[0].grid()
-    axes[1].grid()
-    axes[2].grid()
-
-    html_plotter.add_matplotlib_fig(fig, "very very long")
-
-    fig, axes = plt.subplots(nrows=3, sharex=True)
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[0].plot(x,y,"ro-")
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[0].plot(x,y,"b")
-    axes[0].set_title("graph 1")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[1].plot(x,y,"g--")
-
-    x = [date1 + datetime.timedelta(days=n) for n in range(total_num)]
-    y = np.random.normal(0, 0.01, total_num).cumsum()
-    axes[2].plot(x, y, "g^", markersize=15)
-    axes[0].grid()
-    axes[1].grid()
-    axes[2].grid()
-
-    html_plotter.add_matplotlib_fig(fig, "test")
-
-    f = open("test3.html", "w")
-    print(html_plotter.generate_html(), file=f)
-    f.close()
-
 def example():
-    html_plotter = HTMLPlotter()
+
+    plt = HTMLPlt()
+    plt.plot([1,2,3,4], [3,4,5,6], "bo--", label="test dashed curve")
+    plt.plot([1,2,3,4], [5,6,1,9], "ro-.", label="test -. curve")
+    plt.title("Test graph")
+    plt.xlabel("x axis")
+    plt.ylabel("y axis")
+    plt.xlim(-2,5)
+    plt.ylim(-2,11)
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
-
     example()

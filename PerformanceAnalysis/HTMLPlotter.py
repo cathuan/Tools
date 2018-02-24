@@ -90,6 +90,8 @@ class HTMLPlt(object):
 
 class HTMLPlotter(object):
 
+    linestyles_from_m_to_p = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
+
     def __init__(self, row, col):
         self.row = row
         self.col = col
@@ -106,11 +108,10 @@ class HTMLPlotter(object):
     # for some reason I can't extract linestyle automatically using mpl_to_plotly.
     # do it manually
     def _update_linestyle(self, m_fig, trace):
-        linestyles_from_m_to_p = {"-": None, "--": "dash", ":": "dot", "-.": "dashdot"}
 
         # hiden deep in matplotlib fig..
         m_linestyle = m_fig._axstack._elements[0][1][1].lines[0]._linestyle
-        p_linestyle = linestyles_from_m_to_p[m_linestyle]
+        p_linestyle = HTMLPlotter.linestyles_from_m_to_p[m_linestyle]
         trace["line"].update(dash=p_linestyle)
         return trace
 

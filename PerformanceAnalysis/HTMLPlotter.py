@@ -11,22 +11,7 @@ import numpy as np
 from collections import defaultdict
 
 
-class HTMLAxis(object):
-
-    def __init__(self, fig, row=1, col=1):
-        self.fig = fig
-        self.row = row
-        self.col = col
-
-    # mimic matplotlib axes API (used for subplots)
-    def plot(self, *args, **kwargs):
-        m_fig = plt.figure()
-        plt.plot(*args, **kwargs)
-        p_fig = tools.mpl_to_plotly(m_fig)
-        trace = p_fig["data"][0]
-        self.fig.append_trace(trace, self.row, self.col)
-
-
+# TODO: to_html()
 class HTMLPlt(object):
 
     def __init__(self):
@@ -73,24 +58,16 @@ class HTMLPlt(object):
         pass  # automatically the grid is on. Actually I think it should be on all the time..
 
     def xlabel(self, xlabel):
-        # Call in this way means there is only one subplot in the canvas
-        # So the only x-axis is xaxis1
-        self.p_fig["layout"]["xaxis1"].update(title=xlabel)
+        self.axes[0].set_xlabel(xlabel)
 
-    def ylabel(self, xlabel):
-        # Call in this way means there is only one subplot in the canvas
-        # So the only y-axis is yaxis1
-        self.p_fig["layout"]["yaxis1"].update(title=xlabel)
+    def ylabel(self, ylabel):
+        self.axes[0].set_ylabel(ylabel)
 
     def xlim(self, xmin, xmax):
-        # Call in this way means there is only one subplot in the canvas
-        # So the only x-axis is xaxis1
-        self.p_fig["layout"]["xaxis1"].update(range=[xmin, xmax])
+        self.axes[0].set_xlim(xmin, xmax)
 
     def ylim(self, ymin, ymax):
-        # Call in this way means there is only one subplot in the canvas
-        # So the only y-axis is yaxis1
-        self.p_fig["layout"]["yaxis1"].update(range=[ymin, ymax])
+        self.axes[0].set_ylim(ymin, ymax)
 
     def show(self):
         plot(self.p_fig, filename="tmp_test.html")
@@ -98,14 +75,14 @@ class HTMLPlt(object):
         self.axes = []
 
 
-# TODO: to_html()
-
 class HTMLPlotter(object):
 
     def __init__(self, p_fig, row, col):
         self.p_fig = p_fig
         self.row = row
         self.col = col
+        self.x_axis = None
+        self.y_axis = None
 
     # for some reason I can't extract linestyle automatically using mpl_to_plotly.
     # do it manually
@@ -125,6 +102,28 @@ class HTMLPlotter(object):
         trace = p_fig["data"][0]
         trace = self._update_linestyle(m_fig, trace)
         self.p_fig.append_trace(trace, self.row, self.col)
+
+        # record the axis of the axes
+        # We record it once a trace is added into the axes
+        if self.x_axis is None:
+            assert self.y_axis is None
+            newly_added_trace = self.p_fig["data"][-1]
+            xs = newly_added_trace["xaxis"]
+            ys = newly_added_trace["yaxis"]
+            self.x_axis = "xaxis" + xs[1:]
+            self.y_axis = "yaxis" + ys[1:]
+            
+    def set_xlabel(self, xlabel):
+        self.p_fig["layout"][self.x_axis].update(title=xlabel)
+
+    def set_ylabel(self, ylabel):
+        self.p_fig["layout"][self.y_axis].update(title=ylabel)
+
+    def set_xlim(self, xmin, xmax):
+        self.p_fig["layout"][self.x_axis].update(range=[xmin, xmax])
+
+    def set_ylim(self, ymin, ymax):
+        self.p_fig["layout"][self.y_axis].update(range=[ymin, ymax])
 
 
 class HTMLPlotter_(object):

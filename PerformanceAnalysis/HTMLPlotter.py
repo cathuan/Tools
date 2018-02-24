@@ -14,7 +14,7 @@ from collections import defaultdict
 # TODO: to_html()
 class HTMLPlt(object):
 
-    def __init__(self, height_per_plot=500, width_per_plot=800):
+    def __init__(self, height_per_plot=300, width_per_plot=400):
         self.fig_configs = None
         self._title = None
         self.axes = []

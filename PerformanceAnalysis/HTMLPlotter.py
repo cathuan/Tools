@@ -15,44 +15,41 @@ from collections import defaultdict
 class HTMLPlt(object):
 
     def __init__(self):
-        self.p_fig = None
+        self.fig_configs = None
+        self._title = None
         self.axes = []
 
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        assert self.p_fig is None
+        assert self.fig_configs is None
         assert len(self.axes) == 0
 
-        self.p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
+        self.fig_configs = dict(nrows=nrows, ncols=ncols, sharex=sharex, sharey=sharey)
         if nrows == 1:
             for col in range(ncols):
-                axes = HTMLPlotter(self.p_fig, 1, col+1)
+                axes = HTMLPlotter(1, col+1)
                 self.axes.append(axes)
         elif ncols == 1:
             for row in range(nrows):
-                axes = HTMLPlotter(self.p_fig, row+1, 1)
+                axes = HTMLPlotter(row+1, 1)
                 self.axes.append(axes)
         else:
             for row in range(nrows):
                 self.axes.append([])
                 for col in range(ncols):
-                    axes = HTMLPlotter(self.p_fig, row+1, col+1)
+                    axes = HTMLPlotter(row+1, col+1)
                     self.axes[row].append(axes)
         
-        return self.p_fig, self.axes
+        return self.fig_configs, self.axes
         
     def plot(self, *args, **kwargs):
-        if self.p_fig is None:
-            assert len(self.axes) == 0
-            self.p_fig = tools.make_subplots(rows=1, cols=1)
-            self.axes = [HTMLPlotter(self.p_fig, 1, 1)]
-
-        self.axes[0].plot(*args, **kwargs)
+        _, axes = self.subplots(nrows=1, ncols=1)
+        axes[0].plot(*args, **kwargs)
 
     def title(self, title):
-        self.p_fig["layout"].update(title=title)
+        self._title = title
 
     def legend(self):
-        self.p_fig["layout"].update(showlegend=True)
+        pass  # automatically the legend is on.
 
     def grid(self):
         pass  # automatically the grid is on. Actually I think it should be on all the time..
@@ -70,19 +67,41 @@ class HTMLPlt(object):
         self.axes[0].set_ylim(ymin, ymax)
 
     def show(self):
-        plot(self.p_fig, filename="tmp_test.html")
-        self.p_fig = None  # clean buffer
+        subtitles = []
+        for row in range(self.fig_configs["nrows"]):
+            for col in range(self.fig_configs["ncols"]):
+                subtitles.append(self.axes[row][col].subtitle)
+        p_fig = tools.make_subplots(rows=self.fig_configs["nrows"], cols=self.fig_configs["ncols"],
+                                    shared_xaxes=self.fig_configs["sharex"],
+                                    shared_yaxes=self.fig_configs["sharey"],
+                                    subplot_titles=tuple(subtitles))
+        for row in range(self.fig_configs["nrows"]):
+            for col in range(self.fig_configs["ncols"]):
+                self.axes[row][col].populate_graph(p_fig)
+
+        if self._title is not None:
+            p_fig["layout"].update(title=self._title)
+
+        plot(p_fig, filename="tmp_test.html")
+        self.fig_configs = None  # clean buffer
+        self._title = None
         self.axes = []
 
 
 class HTMLPlotter(object):
 
-    def __init__(self, p_fig, row, col):
-        self.p_fig = p_fig
+    def __init__(self, row, col):
         self.row = row
         self.col = col
+
+        self.traces = []
+        self.subtitle = None
         self.x_axis = None
         self.y_axis = None
+        self.x_label = None
+        self.y_label = None
+        self.x_lim = None
+        self.y_lim = None
 
     # for some reason I can't extract linestyle automatically using mpl_to_plotly.
     # do it manually
@@ -101,29 +120,49 @@ class HTMLPlotter(object):
         p_fig = tools.mpl_to_plotly(m_fig)
         trace = p_fig["data"][0]
         trace = self._update_linestyle(m_fig, trace)
-        self.p_fig.append_trace(trace, self.row, self.col)
+        self.traces.append(trace)
 
-        # record the axis of the axes
-        # We record it once a trace is added into the axes
+    # record the axis of the axes
+    # We record it once a trace is added into the axes
+    def _update_corresponding_axis(self, p_fig):
         if self.x_axis is None:
             assert self.y_axis is None
-            newly_added_trace = self.p_fig["data"][-1]
+            newly_added_trace = p_fig["data"][-1]
             xs = newly_added_trace["xaxis"]
             ys = newly_added_trace["yaxis"]
             self.x_axis = "xaxis" + xs[1:]
             self.y_axis = "yaxis" + ys[1:]
+
+    def set_title(self, subtitle):
+        self.subtitle = subtitle
             
     def set_xlabel(self, xlabel):
-        self.p_fig["layout"][self.x_axis].update(title=xlabel)
+        self.x_label = xlabel
 
     def set_ylabel(self, ylabel):
-        self.p_fig["layout"][self.y_axis].update(title=ylabel)
+        self.y_label = ylabel
 
     def set_xlim(self, xmin, xmax):
-        self.p_fig["layout"][self.x_axis].update(range=[xmin, xmax])
+        self.x_lim = (xmin, xmax)
 
     def set_ylim(self, ymin, ymax):
-        self.p_fig["layout"][self.y_axis].update(range=[ymin, ymax])
+        self.y_lim = (ymin, ymax)
+
+    def populate_graph(self, p_fig):
+        for trace in self.traces:
+            p_fig.append_trace(trace, self.row, self.col)
+        self._update_corresponding_axis(p_fig)
+
+        if self.x_label is not None:
+            p_fig["layout"][self.x_axis].update(title=self.x_label)
+        if self.y_label is not None:
+            p_fig["layout"][self.y_axis].update(title=self.y_label)
+        if self.x_lim is not None:
+            xmin, xmax = self.x_lim
+            p_fig["layout"][self.x_axis].update(range=[xmin, xmax])
+        if self.y_lim is not None:
+            ymin, ymax = self.y_lim
+            p_fig["layout"][self.y_axis].update(range=[ymin, ymax])
 
 
 class HTMLPlotter_(object):
@@ -241,7 +280,7 @@ class HTMLPlotter_(object):
         return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
 
 
-def example():
+def example2():
 
     plt = HTMLPlt()
     plt.plot([1,2,3,4], [3,4,5,6], "bo--", label="test dashed curve")
@@ -252,6 +291,22 @@ def example():
     plt.xlim(-2,5)
     plt.ylim(-2,11)
     plt.legend()
+    plt.show()
+
+
+def example():
+
+    plt = HTMLPlt()
+    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
+    axes[0][0].plot([1,2,3], [4,5,6], "r--", label="pnl")
+    axes[1][0].plot([1,2,3], [4,5,6], "b", label="user")
+    axes[0][1].plot([1,2,3], [4,5,6], "k", label="outrage")
+    axes[1][1].plot([1,2,3], [4,5,6], "m", label="test")
+    plt.legend()
+    axes[0][0].set_title("[0][0] title")
+    axes[0][1].set_title("[0][1] title")
+    axes[0][0].set_xlabel("test x-axis")
+    axes[0][0].set_ylabel("test y-axis")
     plt.show()
 
 

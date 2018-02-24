@@ -112,7 +112,8 @@ class WebpagePlotter(object):
         df = pd.DataFrame(np.arange(20).reshape(10,2))
         df.columns = ["summary", "value"]
         table_trace = Table(header=dict(values=df.columns),
-                            cells=dict(values=[df[col] for col in df.columns]))
+                            cells=dict(values=[df[col] for col in df.columns],
+                                       height=27))
         data = [table_trace]
         layout = dict(height=600, width=800) 
         fig = dict(data=data, layout=layout)

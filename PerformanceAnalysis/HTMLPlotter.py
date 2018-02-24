@@ -14,11 +14,16 @@ from collections import defaultdict
 # TODO: to_html()
 class HTMLPlt(object):
 
-    def __init__(self):
+    def __init__(self, height_per_plot=500, width_per_plot=800):
         self.fig_configs = None
         self._title = None
         self.axes = []
+        self.height_per_plot = height_per_plot
+        self.width_per_plot = width_per_plot
 
+    # ===================================
+    # Methods mimic the API of matplotlib
+    # ===================================
     def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
         assert self.fig_configs is None
         assert len(self.axes) == 0
@@ -66,24 +71,62 @@ class HTMLPlt(object):
     def ylim(self, ymin, ymax):
         self.axes[0].set_ylim(ymin, ymax)
 
+    # ==============
+    # Output methods
+    # ==============
     def show(self):
+        p_fig = self._draw()
+
+        plot(p_fig, filename="tmp_test.html")
+        self._clean_graphs()
+
+    def subplot_to_html_div(self):
+        p_fig = self._draw()
+        p_fig["layout"].update(height=self.fig_configs["nrows"]*self.height_per_plot,
+                               width=self.fig_configs["ncols"]*self.width_per_plot)
+
+        div = plot(p_fig, output_type="div", include_plotlyjs=False)
+        div = str(div)  # unicode to str
+
+        self._clean_graphs()
+        return div
+
+    # ===========================
+    # Methods used to draw graphs
+    # ===========================
+    def _draw(self):
+        p_fig = self._layout_fig()
+        p_fig = self._draw_each_graphs(p_fig)
+        return p_fig
+
+    def _layout_fig(self):
+        # have to record all the subtitles first, because it will be very hard to change subtitle
+        # after the p_fig has been constructed
         subtitles = []
         for row in range(self.fig_configs["nrows"]):
             for col in range(self.fig_configs["ncols"]):
                 subtitles.append(self.axes[row][col].subtitle)
+
+        # construct p_fig
         p_fig = tools.make_subplots(rows=self.fig_configs["nrows"], cols=self.fig_configs["ncols"],
                                     shared_xaxes=self.fig_configs["sharex"],
                                     shared_yaxes=self.fig_configs["sharey"],
                                     subplot_titles=tuple(subtitles))
-        for row in range(self.fig_configs["nrows"]):
-            for col in range(self.fig_configs["ncols"]):
-                self.axes[row][col].populate_graph(p_fig)
 
+        # add title to the whole subgraph
         if self._title is not None:
             p_fig["layout"].update(title=self._title)
 
-        plot(p_fig, filename="tmp_test.html")
-        self.fig_configs = None  # clean buffer
+        return p_fig
+
+    def _draw_each_graphs(self, p_fig):
+        for row in range(self.fig_configs["nrows"]):
+            for col in range(self.fig_configs["ncols"]):
+                p_fig = self.axes[row][col].populate_graph(p_fig)
+        return p_fig
+
+    def _clean_graphs(self):
+        self.fig_configs = None
         self._title = None
         self.axes = []
 
@@ -115,14 +158,6 @@ class HTMLPlotter(object):
         trace["line"].update(dash=p_linestyle)
         return trace
 
-    def plot(self, *args, **kwargs):
-        m_fig = plt.figure()
-        plt.plot(*args, **kwargs)
-        p_fig = tools.mpl_to_plotly(m_fig)
-        trace = p_fig["data"][0]
-        trace = self._update_linestyle(m_fig, trace)
-        self.traces.append(trace)
-
     # record the axis of the axes
     # We record it once a trace is added into the axes
     def _update_corresponding_axis(self, p_fig):
@@ -134,21 +169,7 @@ class HTMLPlotter(object):
             self.x_axis = "xaxis" + xs[1:]
             self.y_axis = "yaxis" + ys[1:]
 
-    def set_title(self, subtitle):
-        self.subtitle = subtitle
-            
-    def set_xlabel(self, xlabel):
-        self.x_label = xlabel
-
-    def set_ylabel(self, ylabel):
-        self.y_label = ylabel
-
-    def set_xlim(self, xmin, xmax):
-        self.x_lim = (xmin, xmax)
-
-    def set_ylim(self, ymin, ymax):
-        self.y_lim = (ymin, ymax)
-
+    # draw the graph on p_fig
     def populate_graph(self, p_fig):
         for trace in self.traces:
             p_fig.append_trace(trace, self.row, self.col)
@@ -164,121 +185,33 @@ class HTMLPlotter(object):
         if self.y_lim is not None:
             ymin, ymax = self.y_lim
             p_fig["layout"][self.y_axis].update(range=[ymin, ymax])
-
-
-class HTMLPlotter_(object):
-
-    html_template = """
-    <html>
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
-            <title>{title}</title>
-
-            <!-- Used to hide and update the selected graphs from dropdown menu -->
-            <script language="JavaScript" type="text/JavaScript">
-                function show(targetid) {{
-                    if (document.getElementById) {{
-                        var i = 0;
-                        var el;
-                        while (el = document.getElementById("graph" + i)) {{
-                            if (i == targetid) {{
-                                el.style.display = "block";
-                            }}
-                            else {{
-                                el.style.display = "none";
-                            }}
-                            i++;
-                        }}
-                    }}
-                }}
-            </script>
-
-            <!-- Required to interact with the graphs -->
-            <!-- Latest compiled and minified plotly.js JavaScript -->
-            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-            <!-- OR use a specific plotly.js release (e.g. version 1.5.0) -->
-            <!-- <script src="https://cdn.plot.ly/plotly-1.5.0.min.js"></script> -->
-
-            <style type="text/css">
-                .start-hide{{display:none;}}
-                .default{{display:block;}}
-            </style>
-        </head>
-        <body>
-            <center>
-                Choose the graph you want:
-                <td width="100%" align="right">
-                    <select onchange="show(parseInt(this.value));">{dropdown_options}</select>
-                </td>
-            </center>
-            <center>{graph_divs}</center>
-        </body>
-    </html>
-    """
-
-    def __init__(self, title):
-        self.title = title
-        self.graphs = defaultdict(lambda: [])
-        self.graph_orders = []
-        self.fig = None
-    def subplots(self, nrows=1, ncols=1, sharex=False, sharey=False):
-        p_fig = tools.make_subplots(rows=nrows, cols=ncols, shared_xaxes=sharex, shared_yaxes=sharey)
-        p_fig["layout"].update(showlegend=True)
         return p_fig
 
-    def show(self):
-        plot(self.fig, filename="tmp_test.html")
+    # ===================================
+    # Methods mimic the API of matplotlib
+    # ===================================
+    def plot(self, *args, **kwargs):
+        m_fig = plt.figure()
+        plt.plot(*args, **kwargs)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        trace = self._update_linestyle(m_fig, trace)
+        self.traces.append(trace)
 
-    def add_matplotlib_fig(self, fig, graph_name):
-        if graph_name not in self.graph_orders:
-            self.graph_orders.append(graph_name)
+    def set_title(self, subtitle):
+        self.subtitle = subtitle
+            
+    def set_xlabel(self, xlabel):
+        self.x_label = xlabel
 
-        plotly_fig = tools.mpl_to_plotly(fig)
+    def set_ylabel(self, ylabel):
+        self.y_label = ylabel
 
-        for i in range(len(plotly_fig.data)-1):
-            data = plotly_fig.data[i]
-            data.xaxis = plotly_fig.data[-1].xaxis
-        self.graphs[graph_name] = plotly_fig
+    def set_xlim(self, xmin, xmax):
+        self.x_lim = (xmin, xmax)
 
-    def _get_drop_menu_html(self):
-        dropdown_options = ''
-        for graph_index, graph_name in enumerate(self.graph_orders):
-            option = '<option value="%s">%s</option>' % (graph_index, graph_name)
-            dropdown_options += option
-        return dropdown_options
-
-    def _get_graphs_html(self):
-        divs = ''
-        for graph_index, graph_name in enumerate(self.graph_orders):
-            fig = self.graphs[graph_name]
-            fig["layout"].update(height=1000, width=1000)
-            div = plot(fig,
-                       output_type="div",  # output div html strings instead of a full html file
-                       include_plotlyjs=False  # the js script plotly.js is included in html_template via cdn.
-                       )
-            div = str(div)  # unicode to str
-
-            # We will show only one set of graphs each time. The default one is the first one we start to plot.
-            # This one will be set with class "default".
-            # Other graphs are originally hiden. The class will be "start-hide"
-            if graph_index == 0:
-                divs += '<div class="default" id="graph%s">' % graph_index + div + '</div>'
-            else:
-                divs += '<div class="start-hide" id="graph%s">' % graph_index + div + '</div>'
-        return divs
-
-    def generate_html(self):
-        """Generate html code of the graphs with selections
-        """
-
-        dropdown_options = self._get_drop_menu_html()
-        graph_divs = self._get_graphs_html()
-
-        # HTML template has 3 formats
-        # title: title of the graph
-        # dropdown_options: divs and selections used to determine the dropdown menus
-        # graph_divs: divs containing js for graphs. Generally it contains the values used to plot
-        return self.html_template.format(title=self.title, dropdown_options=dropdown_options, graph_divs=graph_divs)
+    def set_ylim(self, ymin, ymax):
+        self.y_lim = (ymin, ymax)
 
 
 def example2():

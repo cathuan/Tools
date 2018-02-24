@@ -103,9 +103,16 @@ class HTMLPlt(object):
         # have to record all the subtitles first, because it will be very hard to change subtitle
         # after the p_fig has been constructed
         subtitles = []
-        for row in range(self.fig_configs["nrows"]):
+        if self.fig_configs["nrows"] == 1:
             for col in range(self.fig_configs["ncols"]):
-                subtitles.append(self.axes[row][col].subtitle)
+                subtitles.append(self.axes[col].subtitle)
+        elif self.fig_configs["ncols"] == 1:
+            for row in range(self.fig_configs["nrows"]):
+                subtitles.append(self.axes[row].subtitle)
+        else:
+            for row in range(self.fig_configs["nrows"]):
+                for col in range(self.fig_configs["ncols"]):
+                    subtitles.append(self.axes[row][col].subtitle)
 
         # construct p_fig
         p_fig = tools.make_subplots(rows=self.fig_configs["nrows"], cols=self.fig_configs["ncols"],
@@ -120,9 +127,16 @@ class HTMLPlt(object):
         return p_fig
 
     def _draw_each_graphs(self, p_fig):
-        for row in range(self.fig_configs["nrows"]):
+        if self.fig_configs["nrows"] == 1:
             for col in range(self.fig_configs["ncols"]):
-                p_fig = self.axes[row][col].populate_graph(p_fig)
+                p_fig = self.axes[col].populate_graph(p_fig)
+        elif self.fig_configs["ncols"] == 1:
+            for row in range(self.fig_configs["nrows"]):
+                p_fig = self.axes[row].populate_graph(p_fig)
+        else:
+            for row in range(self.fig_configs["nrows"]):
+                for col in range(self.fig_configs["ncols"]):
+                    p_fig = self.axes[row][col].populate_graph(p_fig)
         return p_fig
 
     def _clean_graphs(self):

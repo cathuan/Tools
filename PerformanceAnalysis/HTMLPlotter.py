@@ -4,6 +4,7 @@
 from __future__ import print_function
 from plotly.offline import plot
 from plotly import tools
+from plotly.graph_objs import Table
 import matplotlib.pyplot as plt
 
 import datetime
@@ -94,6 +95,11 @@ class HTMLPlt(object):
     # ===========================
     # Methods used to draw graphs
     # ===========================
+    def draw_graph(self, df, row, col):
+        table_trace = Table(header=dict(values=df.columns),
+                            cells=dict(values=[df[col] for col in df.columns]))
+        return table_trace
+
     def _draw(self):
         p_fig = self._layout_fig()
         p_fig = self._draw_each_graphs(p_fig)
@@ -212,10 +218,6 @@ class HTMLPlotter(object):
         trace = self._update_linestyle(m_fig, trace)
         self.traces.append(trace)
 
-    def fill_between(self, x, y, color="blue"):
-        trace = dict(x=x, y=y, fill="tonexty", line=dict(color=color))
-        self.traces.append(trace)
-
     def set_title(self, subtitle):
         self.subtitle = subtitle
             
@@ -230,12 +232,6 @@ class HTMLPlotter(object):
 
     def set_ylim(self, ymin, ymax):
         self.y_lim = (ymin, ymax)
-
-    def legend(self):
-        pass  # automatically the legend is on.
-
-    def grid(self):
-        pass  # automatically the grid is on. Actually I think it should be on all the time..
 
 
 def example2():

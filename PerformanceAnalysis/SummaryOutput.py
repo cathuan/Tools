@@ -9,6 +9,27 @@ import numpy as np
 import pandas as pd
 
 
+select_graph_js = """
+<script language="JavaScript" type="text/JavaScript">
+    function show(targetid) {{
+        if (document.getElementById) {{
+            var i = 0;
+            var el;
+            while (el = document.getElementById("plotset" + i)) {{
+                if (i == targetid) {{
+                    el.style.display = "block";
+                }}
+                else {{
+                    el.style.display = "none";
+                }}
+                i++;
+            }}
+        }}
+    }}
+</script>
+"""
+
+
 html_template = """
 <html>
     <head>
@@ -16,24 +37,7 @@ html_template = """
         <title>test summary</title>
 
         <!-- Used to hide and update the selected plotsets from dropdown menu -->
-        <script language="JavaScript" type="text/JavaScript">
-            function show(targetid) {{
-                if (document.getElementById) {{
-                    var i = 0;
-                    var el;
-                    while (el = document.getElementById("plotset" + i)) {{
-                        if (i == targetid) {{
-                            el.style.display = "block";
-                        }}
-                        else {{
-                            el.style.display = "none";
-                        }}
-                        i++;
-                    }}
-                }}
-            }}
-        </script>
-
+        """ + select_graph_js + """
         <!-- Required to interact with the plotsets -->
         <!-- Latest compiled and minified plotly.js JavaScript -->
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>

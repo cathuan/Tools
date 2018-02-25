@@ -51,6 +51,10 @@ class HTMLPlt(object):
         _, axes = self.subplots(nrows=1, ncols=1)
         axes[0].plot(*args, **kwargs)
 
+    def hist(self, df, column, bins=None, color="b"):
+        _, axes = self.subplots(nrows=1, ncols=1)
+        axes[0].plot(df, column, bins, color)
+
     def title(self, title):
         self._title = title
 
@@ -75,6 +79,15 @@ class HTMLPlt(object):
     # ==============
     # Output methods
     # ==============
+
+    def get_p_fig(self):
+        p_fig = self._draw()
+        return p_fig
+
+    def plot_fig(self, p_fig):
+        plot(p_fig, filename="tmp_test.html")
+        self._clean_graphs()
+
     def show(self):
         p_fig = self._draw()
 
@@ -210,12 +223,30 @@ class HTMLPlotter(object):
     # ===================================
     # Methods mimic the API of matplotlib
     # ===================================
+
+    # Histogram plotting using matplotlib directly is not easy. 
+    # Usually I use pd.DataFrame.hist() to do so.
+    # This method is used to do similar things
+    def hist(self, df, column, bins=None, color="b"):
+        m_fig = plt.figure()
+        if bins is not None:
+            df[column].hist(bins=bins, color=color)
+        else:
+            df[column].hist(color=color)
+        p_fig = tools.mpl_to_plotly(m_fig)
+        trace = p_fig["data"][0]
+        self.traces.append(trace)
+
     def plot(self, *args, **kwargs):
         m_fig = plt.figure()
         plt.plot(*args, **kwargs)
         p_fig = tools.mpl_to_plotly(m_fig)
         trace = p_fig["data"][0]
         trace = self._update_linestyle(m_fig, trace)
+        self.traces.append(trace)
+
+    def fill_between(self, x, y, color="red"):
+        trace = dict(x=x, y=y, fill="tozeroy", fillcolor=color)
         self.traces.append(trace)
 
     def set_title(self, subtitle):
@@ -232,6 +263,12 @@ class HTMLPlotter(object):
 
     def set_ylim(self, ymin, ymax):
         self.y_lim = (ymin, ymax)
+
+    def grid(self):
+        pass
+
+    def legend(self):
+        pass
 
 
 def example2():

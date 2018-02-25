@@ -31,8 +31,6 @@ if __name__ == "__main__":
                             cells=dict(values=[df[col].tolist() for col in df.columns]),
                             domain=dict(x=[0, 0.45], y=[0.75,1.0]))
 
-    #fig = tools.make_subplots(rows=2, cols=2, specs=[[{}, {}], [{'colspan': 2}, None]],
-    #                          subplot_titles=('First Subplot','Second Subplot', 'Third Subplot'))
     fig = tools.make_subplots(rows=2, cols=2, specs=[[{"rowspan":2}, {}], [None, {}]])
 
     fig.append_trace(trace1, 1, 2)

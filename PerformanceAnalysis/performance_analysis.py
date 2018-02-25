@@ -13,6 +13,15 @@ import datetime
 from collections import namedtuple
 import numpy as np
 from HTMLPlotter import HTMLPlt
+import resize_layout as rl
+
+
+def to_dollar(value):
+    if value < 0:
+        sign = "-$"
+    else:
+        sign = "$"
+    return "%s%.2f" % (sign, abs(value))
 
 
 class InterdayPnlSummary(object):
@@ -110,12 +119,14 @@ class InterdayPnlSummary(object):
         daily_pnl_mean = s_daily_pnls.mean()
         daily_pnl_stddev = s_daily_pnls.std()
         _, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
-        print("Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean)
-        print("Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev)
-        print("Daily Pnl Summary: daily pnl sharpe ratio: %.2f" % (daily_pnl_mean * 1.0 / daily_pnl_stddev))
-        print("Daily Pnl Summary: daily pnl max win: $%.2f" % s_daily_pnls.max())
-        print("Daily Pnl Summary: daily pnl max loss: $%.2f" % s_daily_pnls.min())
-        print("Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value)
+        df = pd.DataFrame([["daily pnl mean", to_dollar(daily_pnl_mean)],
+                           ["daily pnl stddev", to_dollar(daily_pnl_stddev)],
+                           ["daily pnl sharpe ratio", "%.2f" % (daily_pnl_mean * 1.0 / daily_pnl_stddev)],
+                           ["daily pnl max win", to_dollar(s_daily_pnls.max())],
+                           ["daily pnl max loss", to_dollar(s_daily_pnls.min())],
+                           ["pnl normal test p-value", "%.4f" % normal_test_p_value]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize_daily_pnl_in_bps(self):
         # daily pnl in bps
@@ -125,54 +136,72 @@ class InterdayPnlSummary(object):
         daily_bps_mean = s_daily_bps.mean()
         daily_bps_stddev = s_daily_bps.std()
         _, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_bps)
-        print("Daily Pnl in bps Summary: daily pnl in bps mean: %.2f" % daily_bps_mean)
-        print("Daily Pnl in bps Summary: daily pnl in bps stddev: %.2f" % daily_bps_stddev)
-        print("Daily Pnl in bps Summary: daily pnl in bps normal test p-value: %.4f" % normal_test_p_value)
+        df = pd.DataFrame([["daily pnl in bps mean", "%.2f" % daily_bps_mean],
+                           ["daily pnl in bps stddev", "%.2f" % daily_bps_stddev],
+                           ["daily pnl in bps normal test p-value", "%.4f" % normal_test_p_value]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize_daily_abs_delta(self):
         s_daily_abs_delta = self.get_daily_abs_deltas_series()
         daily_abs_delta_mean = s_daily_abs_delta.mean()
-        print("Daily abs delta Summary: daily abs delta mean: $%d" % daily_abs_delta_mean)
-        print("Daily abs delta Summary: max daily abs delta: $%d" % s_daily_abs_delta.max())
-        print("Daily abs delta Summary: min daily abs delta: $%d" % s_daily_abs_delta.min())
-
-    def summarize_daily_delta(self):
-        s_daily_delta = self.get_daily_deltas_series()
-        daily_delta_mean = s_daily_delta.mean()
-        print("Daily delta Summary: daily delta mean: $%d" % daily_delta_mean)
-        print("Daily delta Summary: max daily delta: $%d" % s_daily_delta.max())
-        print("Daily delta Summary: min daily delta: $%d" % s_daily_delta.min())
-
-    def summarize_daily_trades(self):
-        s_daily_trades = self.get_daily_trades_series()
-        print("Daily count Summary: daily count mean: %.1f" % s_daily_trades.mean())
-        print("Daily count Summary: max daily count: %d" % s_daily_trades.max())
-        print("Daily count Summary: min daily count: %d" % s_daily_trades.min())
+        df = pd.DataFrame([["daily abs delta mean", daily_abs_delta_mean],
+                           ["max daily abs delta", s_daily_abs_delta.max()],
+                           ["min daily abs delta", s_daily_abs_delta.min()]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize_pnl_by_symbols(self):
 
         s_pnl_by_symbols = self.get_pnl_by_symbols_series()
-        print("Pnl Summary by Symbols: max pnl $%d in symbol %s" % (s_pnl_by_symbols.max(), s_pnl_by_symbols.idxmax()))
-        print("Pnl Summary by Symbols: min pnl $%d in symbol %s" % (s_pnl_by_symbols.min(), s_pnl_by_symbols.idxmin()))
+        df = pd.DataFrame([["max pnl from one symbol", to_dollar(s_pnl_by_symbols.max())],
+                           ["max pnl symbol", s_pnl_by_symbols.idxmax()],
+                           ["min pnl from one symbol", to_dollar(s_pnl_by_symbols.min())],
+                           ["min pnl symbol", s_pnl_by_symbols.idxmin()]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize_trades_by_symbols(self):
         s_trades_by_symbol = self.get_trades_by_symbol_series()
-        print("Trades Summary by Symbols: max symbol count: %d" % s_trades_by_symbol.max())
-        print("Trades Summary by Symbols: min symbol count: %d" % s_trades_by_symbol.min())
+        df = pd.DataFrame([["max trade counts from one symbol", to_dollar(s_trades_by_symbol.max())],
+                           ["max trade counts symbol", s_trades_by_symbol.idxmax()],
+                           ["min trade counts from one symbol", to_dollar(s_trades_by_symbol.min())],
+                           ["min trade counts symbol", s_trades_by_symbol.idxmin()]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize_drawdown(self):
         s_drawdowns = self.get_drawdowns_series()
-        print("Drawdown Summary: max drawdown: $%.2f" % s_drawdowns.min())
+        df = pd.DataFrame([["max drawdown", to_dollar(s_drawdowns.min())]])
+        df.columns = ["Description", "value"]
+        return df
+
+    def summarize_daily_delta(self):
+        s_daily_delta = self.get_daily_deltas_series()
+        daily_delta_mean = s_daily_delta.mean()
+        df = pd.DataFrame([["daily delta mean", to_dollar(daily_delta_mean)],
+                           ["max daily delta", to_dollar(s_daily_delta.max())],
+                           ["min daily delta", to_dollar(s_daily_delta.min())]])
+        df.columns = ["Description", "value"]
+        return df
+
+    def summarize_daily_trades(self):
+        s_daily_trades = self.get_daily_trades_series()
+        df = pd.DataFrame([["daily count mean", to_dollar(s_daily_trades.mean())],
+                           ["max daily count", to_dollar(s_daily_trades.max())],
+                           ["min daily count", to_dollar(s_daily_trades.min())]])
+        df.columns = ["Description", "value"]
+        return df
 
     def summarize(self):
-        self.summarize_daily_pnl()
-        self.summarize_daily_trades()
-        self.summarize_daily_pnl_in_bps()
-        self.summarize_daily_delta()
-        self.summarize_daily_abs_delta()
-        self.summarize_drawdown()
-        self.summarize_pnl_by_symbols()
-        self.summarize_trades_by_symbols()
+        df = self.summarize_daily_pnl()
+        #self.summarize_daily_trades()
+        #self.summarize_daily_pnl_in_bps()
+        #self.summarize_daily_delta()
+        #self.summarize_daily_abs_delta()
+        #self.summarize_drawdown()
+        #self.summarize_pnl_by_symbols()
+        #self.summarize_trades_by_symbols()
 
     def plot(self):
 
@@ -204,7 +233,38 @@ class InterdayPnlSummary(object):
         axes[1].grid()
         axes[2].grid()
         axes[3].grid()
-        plt.show()
+
+        fig = plt.get_p_fig()
+        layout = fig["layout"]
+        data = fig["data"]
+        layout = rl.resize_layout(layout, 0.55, 1, 0, 1)
+
+        tables = []
+        tables.append(self.summarize_daily_pnl())
+        tables.append(self.summarize_daily_pnl_in_bps())
+        tables.append(self.summarize_daily_trades())
+        tables.append(self.summarize_pnl_by_symbols())
+        tables.append(self.summarize_trades_by_symbols())
+        tables.append(self.summarize_drawdown())
+        tables.append(self.summarize_daily_delta())
+        tables.append(self.summarize_daily_abs_delta())
+
+        total_rows = sum([len(df)+1 for df in tables])
+        margins = len(tables)-1
+        row_length = (1-margins*0.02) * 1.0 / total_rows
+
+        margin = 0.02
+        prev_bottom = 1.02
+        for df in tables:
+            data.append(rl.get_table_trace(df, x_min=0, x_max=0.45,
+                                           y_min=prev_bottom-margin-(len(df)+1)*row_length,
+                                           y_max=prev_bottom - margin))
+            prev_bottom = prev_bottom - margin - (len(df) + 1) * row_length
+
+        fig["layout"] = layout
+        fig["data"] = data
+        plt.plot_fig(fig)
+        assert False
 
 
 if __name__ == "__main__":

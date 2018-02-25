@@ -7,6 +7,7 @@ We assume
 """
 from __future__ import print_function
 import pandas as pd
+from plotly.offline import plot
 # import matplotlib.pyplot as plt
 import scipy.stats
 import datetime
@@ -14,6 +15,7 @@ from collections import namedtuple
 import numpy as np
 from HTMLPlotter import HTMLPlt
 import resize_layout as rl
+from WebpagePlotter import WebpagePlotter
 
 
 def to_dollar(value):
@@ -145,9 +147,9 @@ class InterdayPnlSummary(object):
     def summarize_daily_abs_delta(self):
         s_daily_abs_delta = self.get_daily_abs_deltas_series()
         daily_abs_delta_mean = s_daily_abs_delta.mean()
-        df = pd.DataFrame([["daily abs delta mean", daily_abs_delta_mean],
-                           ["max daily abs delta", s_daily_abs_delta.max()],
-                           ["min daily abs delta", s_daily_abs_delta.min()]])
+        df = pd.DataFrame([["daily abs delta mean", to_dollar(daily_abs_delta_mean)],
+                           ["max daily abs delta", to_dollar(s_daily_abs_delta.max())],
+                           ["min daily abs delta", to_dollar(s_daily_abs_delta.min())]])
         df.columns = ["Description", "value"]
         return df
 
@@ -187,24 +189,25 @@ class InterdayPnlSummary(object):
 
     def summarize_daily_trades(self):
         s_daily_trades = self.get_daily_trades_series()
-        df = pd.DataFrame([["daily count mean", to_dollar(s_daily_trades.mean())],
-                           ["max daily count", to_dollar(s_daily_trades.max())],
-                           ["min daily count", to_dollar(s_daily_trades.min())]])
+        df = pd.DataFrame([["daily count mean", s_daily_trades.mean()],
+                           ["max daily count", s_daily_trades.max()],
+                           ["min daily count", s_daily_trades.min()]])
         df.columns = ["Description", "value"]
         return df
 
-    def summarize(self):
-        df = self.summarize_daily_pnl()
-        #self.summarize_daily_trades()
-        #self.summarize_daily_pnl_in_bps()
-        #self.summarize_daily_delta()
-        #self.summarize_daily_abs_delta()
-        #self.summarize_drawdown()
-        #self.summarize_pnl_by_symbols()
-        #self.summarize_trades_by_symbols()
+    def _get_summary_dfs(self):
+        tables = []
+        tables.append(self.summarize_daily_pnl())
+        tables.append(self.summarize_daily_pnl_in_bps())
+        tables.append(self.summarize_daily_trades())
+        tables.append(self.summarize_pnl_by_symbols())
+        tables.append(self.summarize_trades_by_symbols())
+        tables.append(self.summarize_drawdown())
+        tables.append(self.summarize_daily_delta())
+        tables.append(self.summarize_daily_abs_delta())
+        return tables
 
-    def plot(self):
-
+    def _get_plots(self):
         s_daily_pnls = self.get_daily_pnls_series()
         s_drawdowns = self.get_drawdowns_series()
         s_daily_deltas = self.get_daily_deltas_series()
@@ -213,7 +216,7 @@ class InterdayPnlSummary(object):
         plt = HTMLPlt()
         _, axes = plt.subplots(nrows=4, sharex=True)
 
-        axes[0].plot(s_daily_pnls.index, s_daily_pnls.cumsum())
+        axes[0].plot(s_daily_pnls.index, s_daily_pnls.cumsum(), "g")
         axes[0].set_title("pnl curve")
         axes[0].set_ylabel("pnl in $")
 
@@ -229,25 +232,18 @@ class InterdayPnlSummary(object):
         axes[3].set_title("daily abs delta")
         axes[3].set_ylabel("abs delta in $")
 
-        axes[0].grid()
-        axes[1].grid()
-        axes[2].grid()
-        axes[3].grid()
+        plt.no_legend()
 
-        fig = plt.get_p_fig()
+        return plt
+
+    def _resize_graphs_to_right_half(self, fig):
         layout = fig["layout"]
-        data = fig["data"]
         layout = rl.resize_layout(layout, 0.55, 1, 0, 1)
+        fig["layout"] = layout
+        return fig
 
-        tables = []
-        tables.append(self.summarize_daily_pnl())
-        tables.append(self.summarize_daily_pnl_in_bps())
-        tables.append(self.summarize_daily_trades())
-        tables.append(self.summarize_pnl_by_symbols())
-        tables.append(self.summarize_trades_by_symbols())
-        tables.append(self.summarize_drawdown())
-        tables.append(self.summarize_daily_delta())
-        tables.append(self.summarize_daily_abs_delta())
+    def _populate_tables_on_left_half(self, fig, tables):
+        data = fig["data"]
 
         total_rows = sum([len(df)+1 for df in tables])
         margins = len(tables)-1
@@ -261,13 +257,31 @@ class InterdayPnlSummary(object):
                                            y_max=prev_bottom - margin))
             prev_bottom = prev_bottom - margin - (len(df) + 1) * row_length
 
-        fig["layout"] = layout
         fig["data"] = data
-        plt.plot_fig(fig)
-        assert False
+        return fig
+
+    def plot(self, is_to_div=False):
+
+        tables = self._get_summary_dfs()
+        plt = self._get_plots()
+
+        fig = plt.get_p_fig()
+        fig = self._resize_graphs_to_right_half(fig)
+        fig = self._populate_tables_on_left_half(fig, tables)
+
+        if is_to_div:
+            # TODO: copied from HTMLPlt.subplot_to_html_div. Refactor.
+            fig["layout"].update(height=1200, width=1400)
+            div = plot(fig, output_type="div", include_plotlyjs=False)
+            div = str(div)  # unicode to str
+            return div
+        else:
+            plt.plot_fig(fig)
 
 
 if __name__ == "__main__":
+
+    page = WebpagePlotter()
 
     summary = InterdayPnlSummary()
     with open("pnls.csv") as f:
@@ -280,4 +294,21 @@ if __name__ == "__main__":
             pnl = float(segs[5])
             abs_delta = abs(float(segs[7]))
             summary.on_pnl(date, symbol, pnl, abs_delta, "usd", side)
-    summary.plot()
+    page.add_subplot("first params", summary.plot(is_to_div=True))
+
+    summary = InterdayPnlSummary()
+    with open("pnls.csv") as f:
+        for line in f.readlines():
+            segs = line.strip().split(",")
+            date_segs = segs[0].split("-")
+            date = datetime.date(int(date_segs[0]), int(date_segs[1]), int(date_segs[2]))
+            symbol = segs[1]
+            side = "B" if segs[4] == "1" else "S"
+            pnl = float(segs[5])
+            abs_delta = abs(float(segs[7]))
+            summary.on_pnl(date, symbol, pnl, abs_delta, "usd", side)
+    div = summary.plot(is_to_div=True)
+    page.add_subplot("second params", div)
+
+    # FIXME: looks like the second graph has some problem. The columns of dataframes are missing.
+    page.output_html("summary_test_page.html")

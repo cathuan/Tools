@@ -12,7 +12,6 @@ import numpy as np
 from collections import defaultdict
 
 
-# TODO: to_html()
 class HTMLPlt(object):
 
     def __init__(self, height_per_plot=300, width_per_plot=400):
@@ -21,6 +20,7 @@ class HTMLPlt(object):
         self.axes = []
         self.height_per_plot = height_per_plot
         self.width_per_plot = width_per_plot
+        self.is_legend = True
 
     # ===================================
     # Methods mimic the API of matplotlib
@@ -108,6 +108,9 @@ class HTMLPlt(object):
     # ===========================
     # Methods used to draw graphs
     # ===========================
+    def no_legend(self):
+        self.is_legend = False
+
     def draw_graph(self, df, row, col):
         table_trace = Table(header=dict(values=df.columns),
                             cells=dict(values=[df[col] for col in df.columns]))
@@ -116,6 +119,8 @@ class HTMLPlt(object):
     def _draw(self):
         p_fig = self._layout_fig()
         p_fig = self._draw_each_graphs(p_fig)
+        if not self.is_legend:
+            p_fig["layout"].update(showlegend=False)
         return p_fig
 
     def _layout_fig(self):

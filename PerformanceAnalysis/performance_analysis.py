@@ -30,7 +30,8 @@ class InterdayPnlSummary(object):
 
     PnlRecord = namedtuple("PnlRecord", ["date", "symbol", "pnl", "abs_delta", "delta", "side"])
 
-    def __init__(self):
+    def __init__(self, title):
+        self.title = title
         self.exchange_rates = {"yen": 0.01, "usd": 1, "aud": 1}
         self.pnl_records = []
 
@@ -268,6 +269,7 @@ class InterdayPnlSummary(object):
         fig = plt.get_p_fig()
         fig = self._resize_graphs_to_right_half(fig)
         fig = self._populate_tables_on_left_half(fig, tables)
+        fig["layout"].update(title=self.title)
 
         if is_to_div:
             # TODO: copied from HTMLPlt.subplot_to_html_div. Refactor.
@@ -283,7 +285,7 @@ if __name__ == "__main__":
 
     page = WebpagePlotter()
 
-    summary = InterdayPnlSummary()
+    summary = InterdayPnlSummary("AAAAA")
     with open("pnls.csv") as f:
         for line in f.readlines():
             segs = line.strip().split(",")
@@ -296,7 +298,7 @@ if __name__ == "__main__":
             summary.on_pnl(date, symbol, pnl, abs_delta, "usd", side)
     page.add_subplot("first params", summary.plot(is_to_div=True))
 
-    summary = InterdayPnlSummary()
+    summary = InterdayPnlSummary("BBBB")
     with open("pnls.csv") as f:
         for line in f.readlines():
             segs = line.strip().split(",")
@@ -304,8 +306,8 @@ if __name__ == "__main__":
             date = datetime.date(int(date_segs[0]), int(date_segs[1]), int(date_segs[2]))
             symbol = segs[1]
             side = "B" if segs[4] == "1" else "S"
-            pnl = float(segs[5])
-            abs_delta = abs(float(segs[7]))
+            pnl = float(segs[5]) + 1.1
+            abs_delta = abs(float(segs[7])+1.1)
             summary.on_pnl(date, symbol, pnl, abs_delta, "usd", side)
     div = summary.plot(is_to_div=True)
     page.add_subplot("second params", div)

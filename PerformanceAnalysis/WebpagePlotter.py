@@ -39,7 +39,7 @@ html_template = """
         <!-- <script src="https://cdn.plot.ly/plotly-1.5.0.min.js"></script> -->
 
         <style type="text/css">
-            .start-hide{{display:none;}}
+            .hide{{display:none;}}
             .default{{display:block;}}
         </style>
     </head>

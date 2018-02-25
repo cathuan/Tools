@@ -212,6 +212,10 @@ class HTMLPlotter(object):
         trace = self._update_linestyle(m_fig, trace)
         self.traces.append(trace)
 
+    def fill_between(self, x, y, color="blue"):
+        trace = dict(x=x, y=y, fill="tonexty", line=dict(color=color))
+        self.traces.append(trace)
+
     def set_title(self, subtitle):
         self.subtitle = subtitle
             
@@ -226,6 +230,12 @@ class HTMLPlotter(object):
 
     def set_ylim(self, ymin, ymax):
         self.y_lim = (ymin, ymax)
+
+    def legend(self):
+        pass  # automatically the legend is on.
+
+    def grid(self):
+        pass  # automatically the grid is on. Actually I think it should be on all the time..
 
 
 def example2():

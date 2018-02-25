@@ -5,13 +5,14 @@ We assume
 - the pnl column is with level 0 index "Pnl"
 - the delta column is with level 0 index "Delta"
 """
+from __future__ import print_function
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import scipy.stats
 import datetime
 from collections import namedtuple
 import numpy as np
-from HTMLPlotter import HTMLPlotter
+from HTMLPlotter import HTMLPlt
 
 
 class InterdayPnlSummary(object):
@@ -108,13 +109,13 @@ class InterdayPnlSummary(object):
         s_daily_pnls = self.get_daily_pnls_series()
         daily_pnl_mean = s_daily_pnls.mean()
         daily_pnl_stddev = s_daily_pnls.std()
-        k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
-        print "Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean
-        print "Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev
-        print "Daily Pnl Summary: daily pnl sharpe ratio: %.2f" % (daily_pnl_mean * 1.0 / daily_pnl_stddev)
-        print "Daily Pnl Summary: daily pnl max win: $%.2f" % s_daily_pnls.max()
-        print "Daily Pnl Summary: daily pnl max loss: $%.2f" % s_daily_pnls.min()
-        print "Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value
+        _, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_pnls)
+        print("Daily Pnl Summary: daily pnl mean: $%.2f" % daily_pnl_mean)
+        print("Daily Pnl Summary: daily pnl stddev: $%.2f" % daily_pnl_stddev)
+        print("Daily Pnl Summary: daily pnl sharpe ratio: %.2f" % (daily_pnl_mean * 1.0 / daily_pnl_stddev))
+        print("Daily Pnl Summary: daily pnl max win: $%.2f" % s_daily_pnls.max())
+        print("Daily Pnl Summary: daily pnl max loss: $%.2f" % s_daily_pnls.min())
+        print("Daily Pnl Summary: daily pnl normal test p-value: %.4f" % normal_test_p_value)
 
     def summarize_daily_pnl_in_bps(self):
         # daily pnl in bps
@@ -123,45 +124,45 @@ class InterdayPnlSummary(object):
         s_daily_bps = s_daily_pnls * 10000.0 / s_daily_abs_deltas
         daily_bps_mean = s_daily_bps.mean()
         daily_bps_stddev = s_daily_bps.std()
-        k2_statistics, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_bps)
-        print "Daily Pnl in bps Summary: daily pnl in bps mean: %.2f" % daily_bps_mean
-        print "Daily Pnl in bps Summary: daily pnl in bps stddev: %.2f" % daily_bps_stddev
-        print "Daily Pnl in bps Summary: daily pnl in bps normal test p-value: %.4f" % normal_test_p_value
+        _, normal_test_p_value = scipy.stats.mstats.normaltest(s_daily_bps)
+        print("Daily Pnl in bps Summary: daily pnl in bps mean: %.2f" % daily_bps_mean)
+        print("Daily Pnl in bps Summary: daily pnl in bps stddev: %.2f" % daily_bps_stddev)
+        print("Daily Pnl in bps Summary: daily pnl in bps normal test p-value: %.4f" % normal_test_p_value)
 
     def summarize_daily_abs_delta(self):
         s_daily_abs_delta = self.get_daily_abs_deltas_series()
         daily_abs_delta_mean = s_daily_abs_delta.mean()
-        print "Daily abs delta Summary: daily abs delta mean: $%d" % daily_abs_delta_mean
-        print "Daily abs delta Summary: max daily abs delta: $%d" % s_daily_abs_delta.max()
-        print "Daily abs delta Summary: min daily abs delta: $%d" % s_daily_abs_delta.min()
+        print("Daily abs delta Summary: daily abs delta mean: $%d" % daily_abs_delta_mean)
+        print("Daily abs delta Summary: max daily abs delta: $%d" % s_daily_abs_delta.max())
+        print("Daily abs delta Summary: min daily abs delta: $%d" % s_daily_abs_delta.min())
 
     def summarize_daily_delta(self):
         s_daily_delta = self.get_daily_deltas_series()
         daily_delta_mean = s_daily_delta.mean()
-        print "Daily delta Summary: daily delta mean: $%d" % daily_delta_mean
-        print "Daily delta Summary: max daily delta: $%d" % s_daily_delta.max()
-        print "Daily delta Summary: min daily delta: $%d" % s_daily_delta.min()
+        print("Daily delta Summary: daily delta mean: $%d" % daily_delta_mean)
+        print("Daily delta Summary: max daily delta: $%d" % s_daily_delta.max())
+        print("Daily delta Summary: min daily delta: $%d" % s_daily_delta.min())
 
     def summarize_daily_trades(self):
         s_daily_trades = self.get_daily_trades_series()
-        print "Daily count Summary: daily count mean: %.1f" % s_daily_trades.mean()
-        print "Daily count Summary: max daily count: %d" % s_daily_trades.max()
-        print "Daily count Summary: min daily count: %d" % s_daily_trades.min()
+        print("Daily count Summary: daily count mean: %.1f" % s_daily_trades.mean())
+        print("Daily count Summary: max daily count: %d" % s_daily_trades.max())
+        print("Daily count Summary: min daily count: %d" % s_daily_trades.min())
 
     def summarize_pnl_by_symbols(self):
 
         s_pnl_by_symbols = self.get_pnl_by_symbols_series()
-        print "Pnl Summary by Symbols: max pnl $%d in symbol %s" % (s_pnl_by_symbols.max(), s_pnl_by_symbols.idxmax())
-        print "Pnl Summary by Symbols: min pnl $%d in symbol %s" % (s_pnl_by_symbols.min(), s_pnl_by_symbols.idxmin())
+        print("Pnl Summary by Symbols: max pnl $%d in symbol %s" % (s_pnl_by_symbols.max(), s_pnl_by_symbols.idxmax()))
+        print("Pnl Summary by Symbols: min pnl $%d in symbol %s" % (s_pnl_by_symbols.min(), s_pnl_by_symbols.idxmin()))
 
     def summarize_trades_by_symbols(self):
         s_trades_by_symbol = self.get_trades_by_symbol_series()
-        print "Trades Summary by Symbols: max symbol count: %d" % s_trades_by_symbol.max()
-        print "Trades Summary by Symbols: min symbol count: %d" % s_trades_by_symbol.min()
+        print("Trades Summary by Symbols: max symbol count: %d" % s_trades_by_symbol.max())
+        print("Trades Summary by Symbols: min symbol count: %d" % s_trades_by_symbol.min())
 
     def summarize_drawdown(self):
         s_drawdowns = self.get_drawdowns_series()
-        print "Drawdown Summary: max drawdown: $%.2f" % s_drawdowns.min()
+        print("Drawdown Summary: max drawdown: $%.2f" % s_drawdowns.min())
 
     def summarize(self):
         self.summarize_daily_pnl()
@@ -180,13 +181,14 @@ class InterdayPnlSummary(object):
         s_daily_deltas = self.get_daily_deltas_series()
         s_daily_abs_deltas = self.get_daily_abs_deltas_series()
 
-        fig, axes = plt.subplots(nrows=4, sharex=True)
+        plt = HTMLPlt()
+        _, axes = plt.subplots(nrows=4, sharex=True)
 
         axes[0].plot(s_daily_pnls.index, s_daily_pnls.cumsum())
         axes[0].set_title("pnl curve")
         axes[0].set_ylabel("pnl in $")
 
-        axes[1].fill_between(s_daily_pnls.index, 0, s_drawdowns, color="r")
+        axes[1].fill_between(s_daily_pnls.index, s_drawdowns, color="red")
         axes[1].set_title("drawdown")
         axes[1].set_ylabel("drawdown in $")
 
@@ -204,24 +206,6 @@ class InterdayPnlSummary(object):
         axes[3].grid()
         plt.show()
 
-    def get_html_plot(self, html_filename):
-        s_daily_pnls = self.get_daily_pnls_series()
-        s_drawdowns = self.get_drawdowns_series()
-        s_daily_deltas = self.get_daily_deltas_series()
-        s_daily_abs_deltas = self.get_daily_abs_deltas_series()
-
-        plotter = HTMLPlotter("pnl summary graphs")
-        plotter.plot(s_daily_pnls.index, s_daily_pnls.cumsum().values, "pnl", "daily_pnl", "green", "daily_pnl")
-        plotter.plot(s_drawdowns.index, s_drawdowns.values, "pnl", "drawdown", "red", "drawdown", kind="drawdown")
-        plotter.plot(s_daily_deltas.index, s_daily_deltas.values, "pnl", "daily_delta", "blue", "daily_delta")
-        plotter.plot(s_daily_abs_deltas.index, s_daily_abs_deltas.values, "pnl", "daily_abs_delta", "blue", "daily_abs_delta")
-        plotter.plot(s_daily_pnls.index, s_daily_pnls.cumsum().values, "pnl2", "daily_pnl", "green", "daily_pnl")
-        plotter.plot(s_daily_pnls.index, s_daily_pnls.cumsum().values, "act", "daily_pnl", "green", "daily_pnl")
-
-        f = open(html_filename, "w")
-        print >> f, plotter.generate_html()
-        f.close()
-
 
 if __name__ == "__main__":
 
@@ -236,4 +220,4 @@ if __name__ == "__main__":
             pnl = float(segs[5])
             abs_delta = abs(float(segs[7]))
             summary.on_pnl(date, symbol, pnl, abs_delta, "usd", side)
-    summary.get_html_plot("summary.html")
+    summary.plot()

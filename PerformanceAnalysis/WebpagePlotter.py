@@ -109,7 +109,7 @@ def example():
     page = WebpagePlotter("plot test page")
     plt = HTMLPlt()
 
-    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
+    _, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
     x = range(1000)
     y = np.random.normal(0,0.01,1000).cumsum()
     axes[0][0].plot(x, y, "r--", label="pnl")
@@ -128,7 +128,7 @@ def example():
 
     page.add_subplot("test test test page", plt.subplot_to_html_div())
 
-    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
+    _, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
     x = range(1000)
     y = np.random.normal(0,0.01,1000).cumsum()
     axes[0][0].plot(x, y, "y--", label="pnl")

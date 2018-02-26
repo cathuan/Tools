@@ -1,7 +1,4 @@
 from __future__ import print_function
-from plotly.offline import plot
-from plotly import tools
-
 from collections import defaultdict
 from HTMLPlotter import HTMLPlt
 import numpy as np
@@ -129,9 +126,9 @@ def example():
     page.add_subplot("test test test page", plt.subplot_to_html_div())
 
     _, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
-    x = range(1000)
-    y = np.random.normal(0,0.01,1000).cumsum()
-    axes[0][0].plot(x, y, "y--", label="pnl")
+    dates = range(1000)
+    values = np.random.normal(0,0.01,1000).cumsum()
+    axes[0][0].plot(dates, values, "y--", label="pnl")
     y = np.random.normal(0,0.01,1000).cumsum()
     axes[1][0].plot(x, y, "m", label="user")
     y = np.random.normal(0,0.01,1000).cumsum()
@@ -144,7 +141,6 @@ def example():
     axes[0][0].set_ylabel("test y-axis")
 
     page.add_subplot("copy and paste result", plt.subplot_to_html_div())
-    
     page.output_html("test_page.html")
 
 

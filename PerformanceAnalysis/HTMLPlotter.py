@@ -2,9 +2,14 @@
 # Anyone wants to run this program need to download it from pypi and build to local Python path
 
 from __future__ import print_function
-from plotly.offline import plot
-from plotly import tools
-from plotly.graph_objs import Table
+import sys
+try:
+    from plotly.offline import plot
+    from plotly import tools
+    from plotly.graph_objs import Table
+except ImportError:
+    print("The package plotly is not available. It is an external 3rd party package. Please download it from github.", file=sys.stderr)
+    exit(1)
 import matplotlib.pyplot as plt
 
 import datetime
@@ -142,7 +147,9 @@ class HTMLPlt(object):
         p_fig = tools.make_subplots(rows=self.fig_configs["nrows"], cols=self.fig_configs["ncols"],
                                     shared_xaxes=self.fig_configs["sharex"],
                                     shared_yaxes=self.fig_configs["sharey"],
-                                    subplot_titles=tuple(subtitles))
+                                    subplot_titles=tuple(subtitles),
+                                    horizontal_spacing=0.1,
+                                    vertical_spacing=0.1)
 
         # add title to the whole subgraph
         if self._title is not None:

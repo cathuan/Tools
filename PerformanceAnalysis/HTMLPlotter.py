@@ -300,7 +300,7 @@ def example2():
 def example():
 
     plt = HTMLPlt()
-    fig, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
+    _, axes = plt.subplots(nrows=2, ncols=2, sharex=True)
     axes[0][0].plot([1,2,3], [4,5,6], "r--", label="pnl")
     axes[1][0].plot([1,2,3], [4,5,6], "b", label="user")
     axes[0][1].plot([1,2,3], [4,5,6], "k", label="outrage")

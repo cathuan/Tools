@@ -104,7 +104,7 @@ class AccuracyAnalyzer(object):
                                 for pnls in pnls_grouped_by_date_range])
         
         plt = HTMLPlt()
-        fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
+        _, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
         axes[0].plot(dates, accuracies, "bo-", label="accuracy")
         axes[1].plot(dates, pnls_means, "go-", label="mean pnl")
         axes[1].plot(dates, pnls_means+pnls_stddev, "go--", label="mean pnl + 1 stddev")

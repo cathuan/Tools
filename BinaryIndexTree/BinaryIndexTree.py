@@ -16,7 +16,7 @@ class BinaryIndexTree(object):
     # that the array is preprocessed and partial sums of
     # array elements are stored in BITree[].
     def getSum(self, i):
-        s = 0  #initialize result
+        s = 0  # initialize result
 
         # index in BITree[] is 1 more than the index in arr[]
         i = i + 1
